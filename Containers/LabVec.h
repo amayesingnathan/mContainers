@@ -8,12 +8,15 @@ namespace Labyrinth {
 	class VecIterator
 	{
 	public:
-		using Val = typename Vector::ValType;
-		using Ref = typename Vector::ValType&;
-		using Ptr = typename Vector::ValType*;
+		using TypeVal = typename Vector::ValType;
+		using TypeRef = typename Vector::ValType&;
+		using TypePtr = typename Vector::ValType*;
+
+	private:
+		TypePtr mPtr;
 
 	public:
-		VecIterator(Ptr ptr)
+		VecIterator(TypePtr ptr)
 			: mPtr(ptr) {}
 
 		VecIterator& operator++()
@@ -21,7 +24,7 @@ namespace Labyrinth {
 			mPtr++;
 			return *this;
 		}
-		VecIterator& operator++(int)
+		VecIterator operator++(int)
 		{
 			VecIterator it = *this;
 			++(*this);
@@ -33,24 +36,52 @@ namespace Labyrinth {
 			mPtr--;
 			return *this;
 		}
-		VecIterator& operator--(int)
+		VecIterator operator--(int)
 		{
 			VecIterator it = *this;
 			--(*this);
 			return it;
 		}
 
-		Ref operator[](int index)
+		VecIterator& operator+= (int offset)
+		{
+			mPtr += offset;
+			return *this;
+		}
+		VecIterator operator+ (int offset)
+		{
+			VecIterator it = *this;
+			it += offset;
+			return it;
+		}
+		VecIterator& operator-= (int offset)
+		{
+			return *this += -offset;
+		}
+		VecIterator operator- (int offset)
+		{
+			VecIterator it = *this;
+			it += -offset;
+			return it;
+		}
+
+
+		size_t operator- (const VecIterator& rhs)
+		{
+			return mPtr - rhs.mPtr;
+		}
+
+		TypeRef operator[](int index)
 		{
 			return *(mPtr + index);
 		}
 
-		Ptr operator->()
+		TypePtr operator->()
 		{
 			return mPtr;
 		}
 
-		Ref operator*()
+		TypeRef operator*()
 		{
 			return *mPtr;
 		}
@@ -63,9 +94,6 @@ namespace Labyrinth {
 		{
 			return !(*this == other);
 		}
-
-	private:
-		Ptr mPtr;
 	};
 
 	template<typename T>
@@ -74,6 +102,12 @@ namespace Labyrinth {
 	public:
 		using Iterator = VecIterator<Vector<T>>;
 		using ValType = T;
+
+	private:
+		T* mData = nullptr;
+
+		size_t mSize;
+		size_t mCapacity;
 
 	public:
 		Vector()
@@ -158,9 +192,56 @@ namespace Labyrinth {
 		size_t size() const { return mSize; }
 		size_t capacity() const { return mCapacity; }
 
-		void erase(const Iterator& toRemove)
+		// O(n) time linear search (are other searches possible with iterators?)
+		Iterator find(const Iterator& begin, const Iterator& end, const T& value)
 		{
+			Iterator it = begin;
+			for (it; it != end; it++)
+				if (*it == value) return it;
 
+			return it;
+		}
+
+		Iterator find(const T& value)
+		{
+			return find(begin(), end(), value);
+		}
+
+		void erase(Iterator& it)
+		{
+			// Destroy object and go to next in vector
+			(*it++).~T();
+
+			// Loop from next element after the one to erase to end and overwrite the previous iterator
+			for (it; it != end(); it++)
+			{
+				*(it - 1) = std::move(*it);
+			}
+
+			mSize--;
+		}
+
+		void erase(Iterator& rangeBegin, Iterator& rangeEnd)
+		{
+			// Quality of life so if you put end iterator it will use the last element
+			if (rangeEnd == end())
+				rangeEnd--;	
+
+			size_t span = (rangeEnd - rangeBegin) + 1;
+			Iterator start = rangeBegin;
+			Iterator next = (rangeEnd + 1);
+
+			for (rangeBegin; rangeBegin != next; rangeBegin++)
+				(*rangeBegin).~T();
+
+			for (next; next != end(); next++)
+				*start++ = std::move(*next);
+
+			mSize -= span;
+		}
+		void erase(Iterator&& begin, Iterator&& end)
+		{
+			erase(begin, end);
 		}
 
 		Iterator begin()
@@ -210,13 +291,6 @@ namespace Labyrinth {
 			mData = newBlock;
 			mCapacity = newCapacity;
 		}
-
-	private:
-		T* mData = nullptr;
-
-		size_t mSize;
-		size_t mCapacity;
-
 	};
 
 }

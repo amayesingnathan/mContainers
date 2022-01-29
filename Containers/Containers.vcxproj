@@ -150,8 +150,8 @@
     <ClCompile Include="Containers.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Assert.h" />
     <ClInclude Include="LabVec.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
