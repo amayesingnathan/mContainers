@@ -1,3 +1,9 @@
+# VS files
+.vs/
+
+# Binaries
+bin/
+
 # Prerequisites
 *.d
 
