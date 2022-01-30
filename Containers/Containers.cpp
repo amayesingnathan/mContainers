@@ -3,8 +3,10 @@
 
 #include <iostream>
 #include <vector>
+#include <list>
 #include <string>
 #include "LabVec.h"
+#include "LabList.h"
 
 struct Vec3
 {
@@ -22,7 +24,7 @@ struct Vec3
         std::cout << "Copied\n";
     }
 
-    Vec3(const Vec3&& other)
+    Vec3(const Vec3&& other) noexcept
         : x(other.x), y(other.y), z(other.z)
     {
         std::cout << "Moved\n";
@@ -65,23 +67,16 @@ void PrintVecSize(const Labyrinth::Vector<T>& vec)
 
 int main()
 {
-    std::vector<Vec3> stdver;
-    Labyrinth::Vector<Vec3> a;
-    a.reserve(4);
+    //std::list<Vec3> stdlist(3, 1);
 
-    Vec3 b(2, 5, 7);
-    a.emplace(a.begin(), 5);
-    a.insert(a.begin(), Vec3(2, 5, 7));
-    a.insert(a.begin(), b);
+    //std::vector<Vec3> stdver;
 
-    //stdver.emplace(stdver.begin(), 5);
-    //stdver.insert(stdver.begin(), Vec3(2, 5, 7));
-    //stdver.insert(stdver.begin(), b);
+    Labyrinth::List<Vec3> c(3, 1);
 
-    PrintVec(a);
-    PrintVecSize(a);
+    c.emplace(c.begin(), 2);
 
-
+    for (auto& each : c)
+        std::cout << each << "\n";
 
     //auto it = a.find(3);
 

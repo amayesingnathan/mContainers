@@ -150,6 +150,7 @@
     <ClCompile Include="Containers.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="LabList.h" />
     <ClInclude Include="LabVec.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
