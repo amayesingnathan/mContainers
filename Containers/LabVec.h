@@ -94,6 +94,8 @@ namespace Labyrinth {
 		{
 			return !(*this == other);
 		}
+
+		operator TypePtr() { return mPtr; }
 	};
 
 	template<typename T>
@@ -113,25 +115,26 @@ namespace Labyrinth {
 		Vector()
 		{
 			mSize = 0;
-			Realloc(4);
+			ReAlloc(4);
 		}
 
 		~Vector()
 		{
-			delete[] mData;
+			clear();
+			::operator delete(mData, mCapacity * sizeof(T));
 		}
 
 		void push_back(const T& value)
 		{
 			if (mSize >= mCapacity)
-				Realloc(mCapacity * 2);
+				ReAlloc(mCapacity * 2);
 
 			mData[mSize++] = value;
 		}
 		void push_back(T&& value)
 		{
 			if (mSize >= mCapacity)
-				Realloc(mCapacity * 2);
+				ReAlloc(mCapacity * 2);
 
 			mData[mSize++] = std::move(value);
 		}
@@ -140,10 +143,40 @@ namespace Labyrinth {
 		T& emplace_back(Args&&... args)
 		{
 			if (mSize >= mCapacity)
-				Realloc(mCapacity * 2);
+				ReAlloc(mCapacity * 2);
 
 			new(&mData[mSize]) T(std::forward<Args>(args)...);
 			return mData[mSize++];
+		}
+
+		void insert(Iterator pos, const T& value)
+		{
+			emplace(pos, value);
+		}
+
+		void insert(Iterator pos, T&& value)
+		{
+			emplace(pos, std::move(value));
+		}
+
+		template<typename... Args>
+		void emplace(Iterator pos, Args&&... args)
+		{
+			// Calculate index as iterator will be invalidated by any resizing
+			size_t index = pos - begin();
+
+			// Check for space to move last element into last element + 1
+			if (mSize >= mCapacity)
+				ReAlloc(mCapacity * 2);
+
+			// Shift each element forward one 
+			for (size_t i = mSize; i > index; i--)
+				mData[i] = std::move(mData[i - 1]);
+
+			// Construct new element in place
+			new(&mData[index]) T(std::forward<Args>(args)...);
+
+			mSize++;
 		}
 
 		void pop_back()
@@ -176,16 +209,19 @@ namespace Labyrinth {
 
 		void resize(size_t newSize)
 		{
-			if (newSize > mCapacity)
-				Realloc(newSize, true);
-
+			ReAllocConstruct(newSize);
+			mSize = newSize;
+		}
+		void resize(size_t newSize, const T& value)
+		{
+			ReAllocConstruct(newSize, value);
 			mSize = newSize;
 		}
 		void reserve(size_t newCapacity)
 		{
-			if (newCapacity > mCapacity)
-				Realloc(newCapacity);
+			if (newCapacity <= mCapacity) return;
 
+			ReAlloc(newCapacity);
 			mCapacity = newCapacity;
 		}
 
@@ -223,7 +259,8 @@ namespace Labyrinth {
 
 		void erase(Iterator& rangeBegin, Iterator& rangeEnd)
 		{
-			// Quality of life so if you put end iterator it will use the last element
+			// Quality of life addition so using end iterator will use the last element
+			// (end() points to first pointer after the last element)
 			if (rangeEnd == end())
 				rangeEnd--;	
 
@@ -263,31 +300,56 @@ namespace Labyrinth {
 		}
 
 	private:
-		void Realloc(size_t newCapacity)
+		void ReAlloc(size_t newCapacity)
 		{
-			T* newBlock = new T[newCapacity];
-
-			if (mSize > newCapacity)
-				mSize = newCapacity;
+			T* newBlock = reinterpret_cast<T*>(::operator new(newCapacity * sizeof(T)));
 
 			for (size_t i = 0; i < mSize; i++)
-				newBlock[i] = std::move(mData[i]);
+			{
+				if (i < newCapacity) newBlock[i] = std::move(mData[i]);
+				mData[i].~T();
+			}
 
-			delete[] mData;
+			::operator delete(mData, mCapacity * sizeof(T));
 			mData = newBlock;
 			mCapacity = newCapacity;
 		}
-		void Realloc(size_t newCapacity, bool construct)
+		void ReAllocConstruct(size_t newCapacity)
 		{
-			T* newBlock = new T[newCapacity];
-
-			if (mSize > newCapacity)
-				mSize = newCapacity;
+			T* newBlock = reinterpret_cast<T*>(::operator new(newCapacity * sizeof(T)));
 
 			for (size_t i = 0; i < mSize; i++)
-				newBlock[i] = std::move(mData[i]);
+			{
+				if (i < newCapacity) newBlock[i] = std::move(mData[i]);
+				mData[i].~T();
+			}
+			if (newCapacity > mCapacity)
+			{
+				for (size_t i = mCapacity; i < newCapacity; i++)
+					new(&newBlock[i]) T();
+			}
 
-			delete[] mData;
+			::operator delete(mData, mCapacity * sizeof(T));
+			mData = newBlock;
+			mCapacity = newCapacity;
+		}
+
+		void ReAllocConstruct(size_t newCapacity, const T& val)
+		{
+			T* newBlock = reinterpret_cast<T*>(::operator new(newCapacity * sizeof(T)));
+
+			for (size_t i = 0; i < mSize; i++)
+			{
+				if (i < newCapacity) newBlock[i] = std::move(mData[i]);
+				mData[i].~T();
+			}
+			if (newCapacity > mCapacity)
+			{
+				for (size_t i = mCapacity; i < newCapacity; i++)
+					newBlock[i] = std::move(val);
+			}
+
+			::operator delete(mData, mCapacity * sizeof(T));
 			mData = newBlock;
 			mCapacity = newCapacity;
 		}

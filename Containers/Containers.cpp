@@ -47,27 +47,41 @@ struct Vec3
 
 std::ostream& operator<< (std::ostream& os, const Vec3& print)
 {
-    return os << print.x << ", " << print.y << ", " << print.z << "\n";
+    return os << print.x << ", " << print.y << ", " << print.z;
+}
+
+template<typename T>
+void PrintVec(const Labyrinth::Vector<T>& vec)
+{
+    for (auto& i : vec)
+        std::cout << i << std::endl;
+}
+
+template<typename T>
+void PrintVecSize(const Labyrinth::Vector<T>& vec)
+{
+    std::cout << "Vector Size: " << vec.size() << std::endl;
 }
 
 int main()
 {
+    std::vector<Vec3> stdver;
     Labyrinth::Vector<Vec3> a;
+    a.reserve(4);
 
-    a.emplace_back(1, 2, 5);
-    a.emplace_back(4);
-    a.emplace_back();
-    a.emplace_back(6, 5, 7);
-    a.emplace_back(10);
+    Vec3 b(2, 5, 7);
+    a.emplace(a.begin(), 5);
+    a.insert(a.begin(), Vec3(2, 5, 7));
+    a.insert(a.begin(), b);
 
-    for (auto& i : a)
-    {
-        std::cout << i;
-    }
+    //stdver.emplace(stdver.begin(), 5);
+    //stdver.insert(stdver.begin(), Vec3(2, 5, 7));
+    //stdver.insert(stdver.begin(), b);
 
-    std::cout << "Vector Size: " << a.size() << std::endl;
+    PrintVec(a);
+    PrintVecSize(a);
 
-    //a.resize(8);
+
 
     //auto it = a.find(3);
 
@@ -75,14 +89,7 @@ int main()
     //    a.erase(it);
 
 
-    a.erase(a.begin() + 1, a.begin() + 3);
-
-    for (auto& i : a)
-    {
-        std::cout << i;
-    }
-
-    std::cout << "Vector Size: " << a.size() << std::endl;
+    //a.erase(a.begin() + 1, a.begin() + 3);
 
     std::cin.get();
 }
