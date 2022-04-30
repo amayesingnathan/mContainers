@@ -12,7 +12,7 @@
 #define LOAD_SCALE      2
 #define MAX_BUCKET_SIZE 4
 
-namespace Containers {
+namespace mContainers {
     
     static bool sLimitBucketSize = true;
         

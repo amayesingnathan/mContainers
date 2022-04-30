@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-namespace Containers {
+namespace mContainers {
 
 	template<typename Vector>
 	class VecIterator

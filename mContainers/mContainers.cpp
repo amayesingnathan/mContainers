@@ -54,14 +54,14 @@ std::ostream& operator<< (std::ostream& os, const Vec3& print)
 }
 
 template<typename T>
-void PrintVec(const Containers::Vector<T>& vec)
+void PrintVec(const mContainers::Vector<T>& vec)
 {
     for (auto& i : vec)
         std::cout << i << std::endl;
 }
 
 template<typename T>
-void PrintVecSize(const Containers::Vector<T>& vec)
+void PrintVecSize(const mContainers::Vector<T>& vec)
 {
     std::cout << "Vector Size: " << vec.size() << std::endl;
 }
@@ -72,14 +72,14 @@ int main()
 
     //std::vector<Vec3> stdver;
 
-    Containers::List<Vec3> c(3, 1);
+    mContainers::List<Vec3> c(3, 1);
 
     c.emplace(c.begin(), 2);
 
     for (auto& each : c)
         std::cout << each << "\n";
 
-    Containers::Dictionary<std::string, Vec3> dict;
+    mContainers::Dictionary<std::string, Vec3> dict;
 
     dict.emplace_back("Test1", 6);
 
