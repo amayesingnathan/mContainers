@@ -5,8 +5,9 @@
 #include <vector>
 #include <list>
 #include <string>
-#include "LabVec.h"
-#include "LabList.h"
+#include "Vector.h"
+#include "List.h"
+#include "Dictionary.h"
 
 struct Vec3
 {
@@ -53,14 +54,14 @@ std::ostream& operator<< (std::ostream& os, const Vec3& print)
 }
 
 template<typename T>
-void PrintVec(const Labyrinth::Vector<T>& vec)
+void PrintVec(const Containers::Vector<T>& vec)
 {
     for (auto& i : vec)
         std::cout << i << std::endl;
 }
 
 template<typename T>
-void PrintVecSize(const Labyrinth::Vector<T>& vec)
+void PrintVecSize(const Containers::Vector<T>& vec)
 {
     std::cout << "Vector Size: " << vec.size() << std::endl;
 }
@@ -71,12 +72,18 @@ int main()
 
     //std::vector<Vec3> stdver;
 
-    Labyrinth::List<Vec3> c(3, 1);
+    Containers::List<Vec3> c(3, 1);
 
     c.emplace(c.begin(), 2);
 
     for (auto& each : c)
         std::cout << each << "\n";
+
+    Containers::Dictionary<std::string, Vec3> dict;
+
+    dict.emplace_back("Test1", 6);
+
+    auto& ref = dict["Test1"];
 
     //auto it = a.find(3);
 
