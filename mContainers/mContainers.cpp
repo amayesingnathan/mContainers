@@ -22,19 +22,19 @@ struct Vec3
     Vec3(const Vec3& other)
         : x(other.x), y(other.y), z(other.z)
     {
-        std::cout << "Copied\n";
+        //std::cout << "Copied\n";
     }
 
     Vec3(const Vec3&& other) noexcept
         : x(other.x), y(other.y), z(other.z)
     {
-        std::cout << "Moved\n";
+        //std::cout << "Moved\n";
     }
 
 
     ~Vec3()
     {
-        std::cout << "Destroyed\n";
+        //std::cout << "Destroyed\n";
     }
 
     Vec3& operator= (const Vec3& other)
@@ -72,18 +72,13 @@ int main()
 
     //std::vector<Vec3> stdver;
 
-    mContainers::List<Vec3> c(3, 1);
+    mContainers::Dictionary<int, std::string> dict;
 
-    c.emplace(c.begin(), 2);
+    for (int i = 0; i < 20000; i+=2)
+        dict.emplace_back(i, std::to_string(i));
 
-    for (auto& each : c)
-        std::cout << each << "\n";
+    dict.printCollisionDist();
 
-    mContainers::Dictionary<std::string, Vec3> dict;
-
-    dict.emplace_back("Test1", 6);
-
-    auto& ref = dict["Test1"];
 
     //auto it = a.find(3);
 
@@ -92,6 +87,4 @@ int main()
 
 
     //a.erase(a.begin() + 1, a.begin() + 3);
-
-    std::cin.get();
 }

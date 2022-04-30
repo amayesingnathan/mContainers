@@ -103,10 +103,11 @@ namespace mContainers {
 		struct Node
 		{
 			T data;
-			Node* prev = nullptr;
-			Node* next = nullptr;
+			Node* prev;
+			Node* next;
 
-			Node() = default;
+			Node()
+				: data(), prev(nullptr), next(nullptr) {}
 			Node(Node* _prev, Node* _next)
 				: data(), prev(_prev), next(_next) {}
 			Node(Node* _prev, Node* _next, const T& _data)
@@ -120,7 +121,8 @@ namespace mContainers {
 		};
 
 	public:
-		using Iterator = ListIterator<List<T>>;
+		using ListType = List<T>;
+		using Iterator = ListIterator<ListType>;
 		using ValType = T;
 		using NodeType = Node;
 
@@ -137,7 +139,7 @@ namespace mContainers {
 		}
 
 		List(size_t count)
-			: mHead(new Node)
+			: mHead(new Node), mSize(0)
 		{
 			mHead->next = mHead;
 			mHead->prev = mHead;
@@ -156,7 +158,7 @@ namespace mContainers {
 		}
 
 		List(size_t count, const T& val)
-			: mHead(new Node)
+			: mHead(new Node), mSize(0)
 		{
 			mHead->next = mHead;
 			mHead->prev = mHead;
@@ -164,7 +166,7 @@ namespace mContainers {
 			if (count == 0) return;
 
 			Node* currNode = mHead;
-			for (mSize = 1; mSize <= count; mSize++)
+			for (mSize = 0; mSize < count; mSize++)
 			{
 				currNode->next = new Node(currNode, mHead, val);
 
@@ -197,13 +199,11 @@ namespace mContainers {
 		void clear()
 		{
 			Iterator it = begin();
-			if (it != end())
+			while (it != end())
 			{
-				while (it != end())
-				{
-					it++;
-					delete it->prev;
-				}
+				Node* current = it;
+				it++;
+				delete current;
 			}
 		}
 
@@ -220,6 +220,16 @@ namespace mContainers {
 		T& push_back(const T& value)
 		{
 			Node* newNode = new Node(mHead->prev, mHead, value);
+			mHead->prev->next = newNode;
+			mHead->prev = newNode;
+			mSize++;
+
+			return newNode->data;
+		}
+
+		T& push_back(T&& value)
+		{
+			Node* newNode = new Node(mHead->prev, mHead, std::move(value));
 			mHead->prev->next = newNode;
 			mHead->prev = newNode;
 			mSize++;

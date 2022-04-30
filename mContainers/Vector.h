@@ -102,6 +102,7 @@ namespace mContainers {
 	class Vector
 	{
 	public:
+		using VecType = Vector<T>;
 		using Iterator = VecIterator<Vector<T>>;
 		using ValType = T;
 
@@ -139,14 +140,14 @@ namespace mContainers {
 		void push_back(const T& value)
 		{
 			if (mSize >= mCapacity)
-				ReAlloc(mCapacity * 2);
+				ReAlloc(mCapacity * mCapacity);
 
 			mData[mSize++] = value;
 		}
 		void push_back(T&& value)
 		{
 			if (mSize >= mCapacity)
-				ReAlloc(mCapacity * 2);
+				ReAlloc(mCapacity * mCapacity);
 
 			mData[mSize++] = std::move(value);
 		}
@@ -155,7 +156,7 @@ namespace mContainers {
 		T& emplace_back(Args&&... args)
 		{
 			if (mSize >= mCapacity)
-				ReAlloc(mCapacity * 2);
+				ReAlloc(mCapacity * mCapacity);
 
 			new(&mData[mSize]) T(std::forward<Args>(args)...);
 			return mData[mSize++];
@@ -174,7 +175,7 @@ namespace mContainers {
 
 			// Check for space to move last element into last element + 1
 			if (mSize >= mCapacity)
-				ReAlloc(mCapacity * 2);
+				ReAlloc(mCapacity * mCapacity);
 
 			// Shift each element forward one 
 			for (size_t i = mSize; i > index; i--)
@@ -217,19 +218,16 @@ namespace mContainers {
 		void resize(size_t newSize)
 		{
 			ReAllocConstruct(newSize);
-			mSize = newSize;
 		}
 		void resize(size_t newSize, const T& value)
 		{
 			ReAllocConstruct(newSize, value);
-			mSize = newSize;
 		}
 		void reserve(size_t newCapacity)
 		{
 			if (newCapacity <= mCapacity) return;
 
 			ReAlloc(newCapacity);
-			mCapacity = newCapacity;
 		}
 
 		size_t size() const { return mSize; }
@@ -312,12 +310,10 @@ namespace mContainers {
 			T* newBlock = reinterpret_cast<T*>(::operator new(newCapacity * sizeof(T)));
 
 			for (size_t i = 0; i < mSize; i++)
-			{
 				if (i < newCapacity) newBlock[i] = std::move(mData[i]);
-			}
 
 			if (mCapacity != 0) ::operator delete(mData, mCapacity * sizeof(T));
-			mData = newBlock;
+			mData = std::move(newBlock);
 			mCapacity = newCapacity;
 		}
 		void ReAllocConstruct(size_t newCapacity)
@@ -329,14 +325,14 @@ namespace mContainers {
 				if (i < newCapacity) newBlock[i] = std::move(mData[i]);
 				mData[i].~T();
 			}
-			if (newCapacity > mCapacity)
+			if (newCapacity > mSize)
 			{
-				for (size_t i = mCapacity; i < newCapacity; i++)
+				for (size_t i = mSize; i < newCapacity; i++)
 					new(&newBlock[i]) T();
 			}
 
 			if (mCapacity != 0) ::operator delete(mData, mCapacity * sizeof(T));
-			mData = newBlock;
+			mData = std::move(newBlock);
 			mCapacity = newCapacity;
 			mSize = newCapacity;
 		}
@@ -350,14 +346,14 @@ namespace mContainers {
 				if (i < newCapacity) newBlock[i] = std::move(mData[i]);
 				mData[i].~T();
 			}
-			if (newCapacity > mCapacity)
+			if (newCapacity > mSize)
 			{
-				for (size_t i = mCapacity; i < newCapacity; i++)
+				for (size_t i = mSize; i < newCapacity; i++)
 					newBlock[i] = std::move(val);
 			}
 
 			if (mCapacity != 0) ::operator delete(mData, mCapacity * sizeof(T));
-			mData = newBlock;
+			mData = std::move(newBlock);
 			mCapacity = newCapacity;
 			mSize = newCapacity;
 		}
