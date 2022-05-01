@@ -26,9 +26,8 @@ namespace mContainers {
 		}
 		VecIterator operator++(int)
 		{
-			VecIterator it = *this;
-			++(*this);
-			return it;
+			++mPtr;
+			return *this;
 		}
 
 		VecIterator& operator--()
@@ -38,9 +37,8 @@ namespace mContainers {
 		}
 		VecIterator operator--(int)
 		{
-			VecIterator it = *this;
-			--(*this);
-			return it;
+			--mPtr;
+			return *this;
 		}
 
 		VecIterator& operator+= (int offset)
@@ -48,7 +46,7 @@ namespace mContainers {
 			mPtr += offset;
 			return *this;
 		}
-		VecIterator operator+ (int offset)
+		VecIterator operator+ (int offset) const
 		{
 			VecIterator it = *this;
 			it += offset;
@@ -58,18 +56,18 @@ namespace mContainers {
 		{
 			return *this += -offset;
 		}
-		VecIterator operator- (int offset)
+		VecIterator operator- (int offset) const
 		{
 			VecIterator it = *this;
 			it += -offset;
 			return it;
 		}
 
-
-		size_t operator- (const VecIterator& rhs)
+		size_t operator- (const VecIterator& rhs) const
 		{
 			return mPtr - rhs.mPtr;
 		}
+
 
 		TypeRef operator[](int index)
 		{
@@ -162,31 +160,6 @@ namespace mContainers {
 			return mData[mSize++];
 		}
 
-		void insert(Iterator pos, const T& value)
-		{
-			emplace(pos, value);
-		}
-
-		template<typename... Args>
-		void emplace(Iterator pos, Args&&... args)
-		{
-			// Calculate index as iterator will be invalidated by any resizing
-			size_t index = pos - begin();
-
-			// Check for space to move last element into last element + 1
-			if (mSize >= mCapacity)
-				ReAlloc(mCapacity * mCapacity);
-
-			// Shift each element forward one 
-			for (size_t i = mSize; i > index; i--)
-				mData[i] = std::move(mData[i - 1]);
-
-			// Construct new element in place
-			new(&mData[index]) T(std::forward<Args>(args)...);
-
-			mSize++;
-		}
-
 		void pop_back()
 		{
 			assert(mSize > 0);
@@ -255,35 +228,27 @@ namespace mContainers {
 
 			// Loop from next element after the one to erase to end and overwrite the previous iterator
 			for (it; it != end(); it++)
-			{
 				*(it - 1) = std::move(*it);
-			}
 
 			mSize--;
 		}
 
-		void erase(Iterator& rangeBegin, Iterator& rangeEnd)
+		void erase(const Iterator& rangeBegin, const Iterator& rangeEnd)
 		{
 			// Quality of life addition so using end iterator will use the last element
 			// (end() points to first pointer after the last element)
+			Iterator endCheck = rangeEnd;
 			if (rangeEnd == end())
-				rangeEnd--;	
+				endCheck--;
 
-			size_t span = (rangeEnd - rangeBegin) + 1;
-			Iterator start = rangeBegin;
-			Iterator next = (rangeEnd + 1);
+			Iterator to = rangeBegin;
+			for (Iterator from = endCheck + 1; from != end(); from++, to++)
+				*to = std::move(*from);
 
-			for (rangeBegin; rangeBegin != next; rangeBegin++)
-				(*rangeBegin).~T();
+			for (; to != end(); to++)
+				(*to).~T();
 
-			for (next; next != end(); next++)
-				*start++ = std::move(*next);
-
-			mSize -= span;
-		}
-		void erase(Iterator&& begin, Iterator&& end)
-		{
-			erase(begin, end);
+			mSize -= (rangeEnd - rangeBegin);
 		}
 
 		Iterator begin()
@@ -312,9 +277,9 @@ namespace mContainers {
 			size_t newSize = mSize;
 			if (newCapacity < mSize) newSize = newCapacity;
 			for (size_t i = 0; i < newSize; i++)
-				new(&newBlock[i]) T(std::move(mData[i]));
+				new(&newBlock[i]) T(std::move(mData[i])); // Move construct new data from current data
 
-			::operator delete(mData, mCapacity * sizeof(T));
+			if (mData) ::operator delete(mData, mCapacity * sizeof(T));
 			mData = newBlock;
 			mCapacity = newCapacity;
 		}
@@ -326,15 +291,16 @@ namespace mContainers {
 			size_t oldSize = mSize;
 			if (newCapacity < mSize) mSize = newCapacity;
 			for (size_t i = 0; i < mSize; i++)
-				new(&newBlock[i]) T(std::move(mData[i]));
+				new(&newBlock[i]) T(std::move(mData[i])); // Move construct new data from current data
 
 			for (size_t i = mSize; i < newCapacity; i++)
-				new(&newBlock[i]) T();
+				new(&newBlock[i]) T(); // Initialise new data if growing
 
 			for (size_t i = 0; i < oldSize; i++)
-				mData[i].~T();
+				mData[i].~T(); // Call destructor for moved data
 
-			::operator delete(mData, mCapacity * sizeof(T));
+			if (mData) 
+				::operator delete(mData, mCapacity * sizeof(T));
 			mData = newBlock;
 			mCapacity = newCapacity;
 			mSize = newCapacity;
@@ -347,15 +313,15 @@ namespace mContainers {
 			size_t newSize = mSize;
 			if (newCapacity < mSize) newSize = newCapacity;
 			for (size_t i = 0; i < newSize; i++)
-				new(&newBlock[i]) T(std::move(mData[i]));
+				new(&newBlock[i]) T(std::move(mData[i])); // Move construct new data from current data
 
 			for (size_t i = mSize; i < newSize; i++)
-				new(&newBlock[i]) T();
+				new(&newBlock[i]) T(); // Initialise new data if growing
 
 			for (size_t i = 0; i < mSize; i++)
-				mData[i].~T();
+				mData[i].~T(); // Call destructor for moved data
 
-			::operator delete(mData, mCapacity * sizeof(T));
+			if (mData) ::operator delete(mData, mCapacity * sizeof(T));
 			mData = newBlock;
 			mCapacity = newCapacity;
 			mSize = newCapacity;

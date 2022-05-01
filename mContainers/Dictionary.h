@@ -35,35 +35,22 @@ namespace mContainers {
             KeyValPair(const KeyValPair&) = default;
             KeyValPair(KeyValPair&&) = default;
                 
-            bool operator==(const KeyValPair& other) const
-            {                
-                return key == other.key;
-            }
-            bool operator!=(const KeyValPair& other) const
-            {
-                return !(*this == other);
-            }
         };
 
         struct KeyIndexPair
         {
-            const Key* key;
+            const Key& key;
             size_t index;
 
             KeyIndexPair() : key(nullptr), index(-1) {}
             KeyIndexPair(const Key& _key, size_t _index)
-                : key(&_key), index(_index) {}
+                : key(_key), index(_index) {}
             KeyIndexPair(const KeyIndexPair&) = default;
             KeyIndexPair(KeyIndexPair&&) = default;
 
-            ~KeyIndexPair() 
-            { 
-                std::cout << "Here"; 
-            }
-
             bool operator==(const KeyIndexPair& other) const
             {
-                return *key == other.key;
+                return key == other.key;
             }
             bool operator!=(const KeyIndexPair& other) const
             {
@@ -90,11 +77,11 @@ namespace mContainers {
         {
             Bucket& bucket = mBuckets[Hash(key)]; // Cache bucket for the given key
 
-            if (bucket.size() == 0) return Add(bucket, key);
+            if (bucket.size() == 0) return Add(key);
             auto it = bucket.find(key);
             if (it != bucket.end()) return mData[(*it).index];
             
-            return Add(bucket, key);
+            return Add(key);
         }
         
         const Val& operator[](const Key& key) const
@@ -139,66 +126,38 @@ namespace mContainers {
 
     private: // Underlying Element Modifier Methods
         // This will cause any existing buckets to become invalidated if a rehashing occurs.
-        Val& Add(Bucket& bucket, const Key& key)
-        {
-            if (((mSize / mBucketCount) >= mMaxLoad) ||
-                (sLimitBucketSize && bucket.size() == MAX_BUCKET_SIZE))
-            {
-                ReHash();
-                bucket = mBuckets[Hash(key)];
-            }
-
-            KeyValPair& result = mData.emplace_back(key);
-            bucket.emplace_front(key, mSize);
-            mSize++;
-
-            return result.value;
-        }
         Val& Add(const Key& key)
         {
-            return Add(mBuckets[Hash(key)], key);
-        }
-
-        Val& Add(Bucket& bucket, const Key& key, const Val& value)
-        {
             if (((mSize / mBucketCount) >= mMaxLoad) ||
-                (sLimitBucketSize && bucket.size() == MAX_BUCKET_SIZE))
-            {
-                ReHash();
-                bucket = mBuckets[Hash(key)];
-            }
+                (sLimitBucketSize && mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE)) ReHash();
 
-            KeyValPair& result = mData.emplace_back(key, value);
-            bucket.emplace_front(key, mSize);
-            mSize++;
+            KeyValPair& result = mData.emplace_back(key);
+            mBuckets[Hash(key)].emplace_front(result.key, mSize++);
 
             return result.value;
         }
+
         Val& Add(const Key& key, const Val& value)
         {
-            return Add(mBuckets[Hash(key)], key, value);
-        }
+            if (((mSize / mBucketCount) >= mMaxLoad) ||
+                (sLimitBucketSize && mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE)) ReHash();
 
-        template<typename... Args>
-        Val& Add(Bucket& bucket, const Key& key, Args&&... args)
-        {
-            if ((mSize / mBucketCount) >= mMaxLoad ||
-                (sLimitBucketSize && bucket.size() == MAX_BUCKET_SIZE))
-            {
-                ReHash();
-                bucket = mBuckets[Hash(key)];
-            }
-
-            KeyValPair& result = mData.emplace_back(key, std::forward<Args>(args)...);
-            bucket.emplace_front(key, mSize);
-            mSize++;
+            KeyValPair& result = mData.emplace_back(key, value);
+            mBuckets[Hash(key)].emplace_front(result.key, mSize++);
 
             return result.value;
         }
+
         template<typename... Args>
         Val& Add(const Key& key, Args&&... args)
         {
-            return Add(mBuckets[Hash(key)], key, std::forward<Args>(args)...);
+            if ((mSize / mBucketCount) >= mMaxLoad ||
+                (sLimitBucketSize && mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE)) ReHash();
+
+            KeyValPair& result = mData.emplace_back(key, std::forward<Args>(args)...);
+            mBuckets[Hash(key)].emplace_front(result.key, mSize++);
+
+            return result.value;
         }
         
     private: // Hashing Related Methods
@@ -259,10 +218,6 @@ namespace mContainers {
                 os << std::to_string(i) + " " + std::to_string(size) + "\n";
             }
             std::cout << os.str();
-
-            std::cout << "Average: " + std::to_string((float)sum / (float)mBucketCount) + "\n";
-            std::cout << "No Zero Average: " + std::to_string((float)sum / (float)(mBucketCount - zeroCount)) + "\n";
-            std::cout << "Empties: " + std::to_string(zeroCount) << std::endl;
         }
     };
 

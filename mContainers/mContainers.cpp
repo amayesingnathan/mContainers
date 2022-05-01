@@ -66,22 +66,20 @@ void PrintVecSize(const mContainers::Vector<T>& vec)
     std::cout << "Vector Size: " << vec.size() << std::endl;
 }
 
+void print(int x)
+{
+    std::cout << x << std::endl;
+}
+
 int main()
 {
-    //std::list<Vec3> stdlist(3, 1);
-
-    //std::vector<Vec3> stdver;
-
+    mContainers::Vector<Vec3> myVec;
+    mContainers::List<Vec3> myList;
     mContainers::Dictionary<int, std::string> myDict;
 
-    for (int i = 0; i < 9; i++)
+    for (int i = 0; i < 10000; i++)
         myDict.emplace(i, std::to_string(i));
 
-    //auto it = a.find(3);
+    myDict.printCollisionDistData();
 
-    //if (it != a.end())
-    //    a.erase(it);
-
-
-    //a.erase(a.begin() + 1, a.begin() + 3);
 }

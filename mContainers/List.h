@@ -127,7 +127,7 @@ namespace mContainers {
 
 	private:
 		Node* mHead;
-		uint64_t mSize;
+		size_t mSize;
 
 	public:
 		List() : mHead(nullptr), mSize(0) {}
@@ -157,10 +157,10 @@ namespace mContainers {
 		const T& front() const { return mHead->data; }
 
 		Iterator begin() { return Iterator(mHead); }
-		const Iterator begin() const { return Iterator(mHead->next); }
+		const Iterator begin() const { return Iterator(mHead); }
 
 		Iterator end() { return Iterator(nullptr); }
-		const Iterator end() const { return Iterator(nullptr); }
+		const Iterator end() const{	return Iterator(nullptr);	}
 
 		bool empty() const { return mSize == 0; }
 		size_t size() const { return mSize; };
@@ -170,6 +170,7 @@ namespace mContainers {
 		{
 			for (size_t i = 0; i < mSize; i++)
 				pop_front();
+			mSize = 0;
 		}
 
 		T& insert_after(Iterator pos, const T& value)
@@ -184,8 +185,6 @@ namespace mContainers {
 		T& push_front(const T& value)
 		{
 			Node* newNode = new Node(mHead, value);
-			if (!mHead) { mHead = newNode; return newNode->data; }
-
 			mHead = newNode;
 			mSize++;
 
@@ -195,8 +194,6 @@ namespace mContainers {
 		T& push_front(T&& value)
 		{
 			Node* newNode = new Node(mHead, std::move(value));
-			if (!mHead) { mHead = newNode; return newNode->data; }
-
 			mHead = newNode;
 			mSize++;
 
@@ -210,7 +207,6 @@ namespace mContainers {
 			Node* temp = mHead;
 			mHead = mHead->next;
 			delete temp;
-			temp = nullptr;
 		}
 
 		template<typename... Args>
