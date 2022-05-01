@@ -8,7 +8,7 @@
 #include <iostream>
 
 // Hash Table Default Parameters
-#define DEFAULT_BUCKETS 8
+#define DEFAULT_BUCKETS 7
 #define LOAD_SCALE      2
 #define MAX_BUCKET_SIZE 4
 
@@ -45,23 +45,38 @@ namespace mContainers {
             }
         };
 
-        struct KVPairCopy
+        struct KeyIndexPair
         {
-            Key key;
-            Val value;
+            const Key* key;
+            size_t index;
 
-            KVPairCopy(const KeyValPair& copy)
-                : key(copy.key), value(copy.value) {}
+            KeyIndexPair() : key(nullptr), index(-1) {}
+            KeyIndexPair(const Key& _key, size_t _index)
+                : key(&_key), index(_index) {}
+            KeyIndexPair(const KeyIndexPair&) = default;
+            KeyIndexPair(KeyIndexPair&&) = default;
 
-            operator KeyValPair() { return KeyValPair(key, value); }
+            ~KeyIndexPair() 
+            { 
+                std::cout << "Here"; 
+            }
+
+            bool operator==(const KeyIndexPair& other) const
+            {
+                return *key == other.key;
+            }
+            bool operator!=(const KeyIndexPair& other) const
+            {
+                return !(*this == other);
+            }
         };
 
     private:
-        using Bucket = List<KeyValPair>;
+        using Bucket = List<KeyIndexPair>;
     
     private:    
         Vector<Bucket> mBuckets;
-        Vector<KeyValPair*> mLinkData;
+        Vector<KeyValPair> mData;
         size_t mSize;
         size_t mBucketCount;
         size_t mMaxLoad;
@@ -75,11 +90,11 @@ namespace mContainers {
         {
             Bucket& bucket = mBuckets[Hash(key)]; // Cache bucket for the given key
 
-            if (bucket.size() == 0) return Add(bucket, key).value;
+            if (bucket.size() == 0) return Add(bucket, key);
             auto it = bucket.find(key);
-            if (it != bucket.end()) return (*it).value;
+            if (it != bucket.end()) return mData[(*it).index];
             
-            return Add(bucket, key).value;
+            return Add(bucket, key);
         }
         
         const Val& operator[](const Key& key) const
@@ -95,17 +110,17 @@ namespace mContainers {
         }
         
     public: // Iterator Methods
-        auto begin() { return mLinkData.begin(); }
-        const auto begin() const { return mLinkData.begin(); }  
-        auto end() { return mLinkData.end(); }  
-        const auto end() const { return mLinkData.end(); }
+        auto begin() { return mData.begin(); }
+        const auto begin() const { return mData.begin(); }
+        auto end() { return mData.end(); }
+        const auto end() const { return mData.end(); }
         
     public: // Element Modifiers
-        Val& push_back(const Key& key, const Val& val)
+        Val& insert(const Key& key, const Val& val)
         { return Add(key, val); }
         
         template<typename... Args>
-        Val& emplace_back(const Key& key, Args&&... args)
+        Val& emplace(const Key& key, Args&&... args)
         { return Add(key, std::forward<Args>(args)...); }
     
         void erase(const Key& key)
@@ -117,7 +132,7 @@ namespace mContainers {
             { 
                 bucket.erase(it); 
                 mSize--; 
-                if (auto it = mLinkData.find(&key) != bucket.end()) mLinkData.erase(it);
+                if (auto it = mData.find(&key) != bucket.end()) mData.erase(it);
             }
             
         }
@@ -133,11 +148,11 @@ namespace mContainers {
                 bucket = mBuckets[Hash(key)];
             }
 
-            KeyValPair& kv = bucket.emplace_back(key);
-            mLinkData.emplace_back(&kv);
+            KeyValPair& result = mData.emplace_back(key);
+            bucket.emplace_front(key, mSize);
             mSize++;
 
-            return kv.value;
+            return result.value;
         }
         Val& Add(const Key& key)
         {
@@ -153,11 +168,11 @@ namespace mContainers {
                 bucket = mBuckets[Hash(key)];
             }
 
-            KeyValPair& kv = bucket.emplace_back(key, value);
-            mLinkData.emplace_back(&kv);
+            KeyValPair& result = mData.emplace_back(key, value);
+            bucket.emplace_front(key, mSize);
             mSize++;
 
-            return kv.value;
+            return result.value;
         }
         Val& Add(const Key& key, const Val& value)
         {
@@ -174,11 +189,11 @@ namespace mContainers {
                 bucket = mBuckets[Hash(key)];
             }
 
-            KeyValPair& kv = bucket.emplace_back(key, std::forward<Args>(args)...);
-            mLinkData.emplace_back(&kv);
+            KeyValPair& result = mData.emplace_back(key, std::forward<Args>(args)...);
+            bucket.emplace_front(key, mSize);
             mSize++;
 
-            return kv.value;
+            return result.value;
         }
         template<typename... Args>
         Val& Add(const Key& key, Args&&... args)
@@ -200,29 +215,54 @@ namespace mContainers {
         void ReHash() 
         {
             mBucketCount = Utils::NextPrime(mBucketCount * 2);
-            Vector<KVPairCopy> oldData;
-            oldData.reserve(mSize);
-            
-            for (const Bucket& bucket : mBuckets)
-            {
-                for (const KeyValPair& kv : bucket)
-                    oldData.emplace_back(std::move(kv));
-            }
-
             mBuckets.clear();
             mBuckets.resize(mBucketCount);
 
-            for (const KVPairCopy& kv : oldData)
-                mBuckets[Hash(kv.key)].emplace_back(kv.key, kv.value);
+            for (size_t i = 0; i < mData.size(); i++)
+            {
+                const Key& key = mData[i].key;
+                mBuckets[Hash(key)].emplace_front(key, i);
+            }
         }
         
     public:
         void printCollisionDist()
         {
+            size_t sum = 0;
+            size_t zeroCount = 0;
+            std::ostringstream os;
             for (size_t i = 0; i < mBucketCount; i++)
-                std::cout << "Bucket " + std::to_string(i) + ":\t" + std::to_string(mBuckets[i].size()) + "\n";
+            {
+                size_t size = mBuckets[i].size();
+                sum += size;
+                if (size == 0) zeroCount++;
+                os << "Bucket " + std::to_string(i) + ":\t" + std::to_string(mBuckets[i].size()) + "\n";
+            }
+            os << "\n";
+            std::cout << os.str();
 
-            std::cout.flush();
+            std::cout << "Average \t" + std::to_string((float)sum / (float)mBucketCount) + "\n";
+            std::cout << "-Zero Avg\t" + std::to_string((float)sum / (float)(mBucketCount - zeroCount)) + "\n";
+            std::cout << "Empties \t" + std::to_string(zeroCount) << std::endl;
+        }
+
+        void printCollisionDistData()
+        {
+            size_t sum = 0;
+            size_t zeroCount = 0;
+            std::ostringstream os;
+            for (size_t i = 0; i < mBucketCount; i++)
+            {
+                size_t size = mBuckets[i].size();
+                sum += size;
+                if (size == 0) zeroCount++;
+                os << std::to_string(i) + " " + std::to_string(size) + "\n";
+            }
+            std::cout << os.str();
+
+            std::cout << "Average: " + std::to_string((float)sum / (float)mBucketCount) + "\n";
+            std::cout << "No Zero Average: " + std::to_string((float)sum / (float)(mBucketCount - zeroCount)) + "\n";
+            std::cout << "Empties: " + std::to_string(zeroCount) << std::endl;
         }
     };
 

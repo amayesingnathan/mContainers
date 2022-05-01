@@ -103,18 +103,17 @@ namespace mContainers {
 		struct Node
 		{
 			T data;
-			Node* prev;
 			Node* next;
 
 			Node()
-				: data(), prev(nullptr), next(nullptr) {}
-			Node(Node* _prev, Node* _next)
-				: data(), prev(_prev), next(_next) {}
-			Node(Node* _prev, Node* _next, const T& _data)
-				: data(_data), prev(_prev), next(_next) {}
+				: data(), next(nullptr) {}
+			Node(Node* _next)
+				: data(), next(_next) {}
+			Node(Node* _next, const T& _data)
+				: data(_data), next(_next) {}
 			template<typename... Args>
-			Node(Node* _prev, Node* _next, Args&&... args)
-				: data(std::forward<Args>(args)...), prev(_prev), next(_next) {}
+			Node(Node* _next, Args&&... args)
+				: data(std::forward<Args>(args)...), next(_next) {}
 
 			operator T& () { return data; }
 			T& operator* () { return data; }
@@ -131,129 +130,104 @@ namespace mContainers {
 		uint64_t mSize;
 
 	public:
-		List() 
-			: mHead(new Node), mSize(0)
-		{
-			mHead->next = mHead;
-			mHead->prev = mHead;
-		}
+		List() : mHead(nullptr), mSize(0) {}
 
 		List(size_t count)
-			: mHead(new Node), mSize(0)
+			: mHead(nullptr), mSize(0)
 		{
-			mHead->next = mHead;
-			mHead->prev = mHead;
-
 			if (count == 0) return;
 
-			Node* currNode = mHead;
-			for (mSize = 1; mSize <= count; mSize++)
-			{
-				Node* nextNode = new Node(currNode, mHead);
-				currNode->next = nextNode;
-				mHead->prev = nextNode;
-
-				currNode = nextNode;
-			}
+			for (mSize = 0; mSize < count; mSize++)
+				emplace_front();
 		}
 
 		List(size_t count, const T& val)
-			: mHead(new Node), mSize(0)
+			: mHead(nullptr), mSize(0)
 		{
-			mHead->next = mHead;
-			mHead->prev = mHead;
-
-			if (count == 0) return;
-
-			Node* currNode = mHead;
 			for (mSize = 0; mSize < count; mSize++)
-			{
-				currNode->next = new Node(currNode, mHead, val);
-
-				mHead->prev = currNode->next;
-				currNode = currNode->next;
-			}
+				push_front(val);
 		}
 
 		~List()
 		{
 			clear();
-			delete mHead;
 		}
 
-		T& front() { return mHead->next.data; }
-		const T& front() const { return mHead->next.data; }
-		T& back() { return mHead->prev.data; }
-		const T& back() const { return mHead->prev.data; }
+		T& front() { return mHead->data; }
+		const T& front() const { return mHead->data; }
 
-		Iterator begin() { return Iterator(mHead->next); }
+		Iterator begin() { return Iterator(mHead); }
 		const Iterator begin() const { return Iterator(mHead->next); }
 
-		Iterator end() { return Iterator(mHead); }
-		const Iterator end() const{	return Iterator(mHead);	}
+		Iterator end() { return Iterator(nullptr); }
+		const Iterator end() const { return Iterator(nullptr); }
 
 		bool empty() const { return mSize == 0; }
 		size_t size() const { return mSize; };
-		size_t max_size() const { return std::numeric_limits<std::size_t>::max(); }
+		size_t max_size() const { return -1; }
 
 		void clear()
 		{
-			Iterator it = begin();
-			while (it != end())
-			{
-				Node* current = it;
-				it++;
-				delete current;
-			}
+			for (size_t i = 0; i < mSize; i++)
+				pop_front();
 		}
 
-		T& insert(Iterator pos, const T& value)
+		T& insert_after(Iterator pos, const T& value)
 		{
-			Node* newNode = new Node(pos->prev, pos, value);
-			pos->prev->next = newNode;
-			pos->prev = newNode;
+			Node* newNode = new Node(pos->next, value);
+			pos->next = newNode;
 			mSize++;
 
 			return newNode->data;
 		}
 
-		T& push_back(const T& value)
+		T& push_front(const T& value)
 		{
-			Node* newNode = new Node(mHead->prev, mHead, value);
-			mHead->prev->next = newNode;
-			mHead->prev = newNode;
+			Node* newNode = new Node(mHead, value);
+			if (!mHead) { mHead = newNode; return newNode->data; }
+
+			mHead = newNode;
 			mSize++;
 
 			return newNode->data;
 		}
 
-		T& push_back(T&& value)
+		T& push_front(T&& value)
 		{
-			Node* newNode = new Node(mHead->prev, mHead, std::move(value));
-			mHead->prev->next = newNode;
-			mHead->prev = newNode;
+			Node* newNode = new Node(mHead, std::move(value));
+			if (!mHead) { mHead = newNode; return newNode->data; }
+
+			mHead = newNode;
+			mSize++;
+
+			return newNode->data;
+		}
+
+		void pop_front()
+		{
+			if (!mHead) return;
+
+			Node* temp = mHead;
+			mHead = mHead->next;
+			delete temp;
+			temp = nullptr;
+		}
+
+		template<typename... Args>
+		T& emplace_after(Iterator pos, Args&&... args)
+		{
+			Node* newNode = new Node(pos->next, std::forward<Args>(args)...);
+			pos->next = newNode;
 			mSize++;
 
 			return newNode->data;
 		}
 
 		template<typename... Args>
-		T& emplace(Iterator pos, Args&&... args)
+		T& emplace_front(Args&&... args)
 		{
-			Node* newNode = new Node(pos->prev, pos, std::forward<Args>(args)...);
-			pos->prev->next = newNode;
-			pos->prev = newNode;
-			mSize++;
-
-			return newNode->data;
-		}
-
-		template<typename... Args>
-		T& emplace_back(Args&&... args)
-		{
-			Node* newNode = new Node(mHead->prev, mHead, std::forward<Args>(args)...);
-			mHead->prev->next = newNode;
-			mHead->prev = newNode;
+			Node* newNode = new Node(mHead, std::forward<Args>(args)...);
+			mHead = newNode;
 			mSize++;
 
 			return newNode->data;
@@ -262,11 +236,10 @@ namespace mContainers {
 
 		Iterator find(const Iterator& begin, const Iterator& end, const T& value)
 		{
-			Iterator it = begin;
-			for (it; it != end; it++)
+			for (Iterator it = begin; it != end; it++)
 				if (*it == value) return it;
 
-			return it;
+			return end;
 		}
 
 		Iterator find(const T& value)

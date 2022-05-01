@@ -309,30 +309,33 @@ namespace mContainers {
 		{
 			T* newBlock = reinterpret_cast<T*>(::operator new(newCapacity * sizeof(T)));
 
-			for (size_t i = 0; i < mSize; i++)
-				if (i < newCapacity) newBlock[i] = std::move(mData[i]);
+			size_t newSize = mSize;
+			if (newCapacity < mSize) newSize = newCapacity;
+			for (size_t i = 0; i < newSize; i++)
+				new(&newBlock[i]) T(std::move(mData[i]));
 
-			if (mCapacity != 0) ::operator delete(mData, mCapacity * sizeof(T));
-			mData = std::move(newBlock);
+			::operator delete(mData, mCapacity * sizeof(T));
+			mData = newBlock;
 			mCapacity = newCapacity;
 		}
+
 		void ReAllocConstruct(size_t newCapacity)
 		{
 			T* newBlock = reinterpret_cast<T*>(::operator new(newCapacity * sizeof(T)));
 
+			size_t oldSize = mSize;
+			if (newCapacity < mSize) mSize = newCapacity;
 			for (size_t i = 0; i < mSize; i++)
-			{
-				if (i < newCapacity) newBlock[i] = std::move(mData[i]);
-				mData[i].~T();
-			}
-			if (newCapacity > mSize)
-			{
-				for (size_t i = mSize; i < newCapacity; i++)
-					new(&newBlock[i]) T();
-			}
+				new(&newBlock[i]) T(std::move(mData[i]));
 
-			if (mCapacity != 0) ::operator delete(mData, mCapacity * sizeof(T));
-			mData = std::move(newBlock);
+			for (size_t i = mSize; i < newCapacity; i++)
+				new(&newBlock[i]) T();
+
+			for (size_t i = 0; i < oldSize; i++)
+				mData[i].~T();
+
+			::operator delete(mData, mCapacity * sizeof(T));
+			mData = newBlock;
 			mCapacity = newCapacity;
 			mSize = newCapacity;
 		}
@@ -341,19 +344,19 @@ namespace mContainers {
 		{
 			T* newBlock = reinterpret_cast<T*>(::operator new(newCapacity * sizeof(T)));
 
-			for (size_t i = 0; i < mSize; i++)
-			{
-				if (i < newCapacity) newBlock[i] = std::move(mData[i]);
-				mData[i].~T();
-			}
-			if (newCapacity > mSize)
-			{
-				for (size_t i = mSize; i < newCapacity; i++)
-					newBlock[i] = std::move(val);
-			}
+			size_t newSize = mSize;
+			if (newCapacity < mSize) newSize = newCapacity;
+			for (size_t i = 0; i < newSize; i++)
+				new(&newBlock[i]) T(std::move(mData[i]));
 
-			if (mCapacity != 0) ::operator delete(mData, mCapacity * sizeof(T));
-			mData = std::move(newBlock);
+			for (size_t i = mSize; i < newSize; i++)
+				new(&newBlock[i]) T();
+
+			for (size_t i = 0; i < mSize; i++)
+				mData[i].~T();
+
+			::operator delete(mData, mCapacity * sizeof(T));
+			mData = newBlock;
 			mCapacity = newCapacity;
 			mSize = newCapacity;
 		}

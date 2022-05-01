@@ -72,13 +72,10 @@ int main()
 
     //std::vector<Vec3> stdver;
 
-    mContainers::Dictionary<int, std::string> dict;
+    mContainers::Dictionary<int, std::string> myDict;
 
-    for (int i = 0; i < 20000; i+=2)
-        dict.emplace_back(i, std::to_string(i));
-
-    dict.printCollisionDist();
-
+    for (int i = 0; i < 9; i++)
+        myDict.emplace(i, std::to_string(i));
 
     //auto it = a.find(3);
 

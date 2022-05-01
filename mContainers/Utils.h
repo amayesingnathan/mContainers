@@ -43,7 +43,7 @@ namespace mContainers {
             if (N <= 1)
                 return 2;
 
-            int prime = N;
+            size_t prime = N;
             bool found = false;
 
             // Loop continuously until isPrime returns
