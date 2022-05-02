@@ -26,8 +26,9 @@ namespace mContainers {
 		}
 		VecIterator operator++(int)
 		{
-			++mPtr;
-			return *this;
+			VecIterator temp = *this;
+			temp++;
+			return temp;
 		}
 
 		VecIterator& operator--()
@@ -37,8 +38,9 @@ namespace mContainers {
 		}
 		VecIterator operator--(int)
 		{
-			--mPtr;
-			return *this;
+			VecIterator temp = *this;
+			temp--;
+			return temp;
 		}
 
 		VecIterator& operator+= (int offset)
