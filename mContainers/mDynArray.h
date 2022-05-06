@@ -26,7 +26,7 @@ namespace mContainers {
 		}
 		mDynIterator operator++(int)
 		{
-			VecIterator temp = *this;
+			mDynIterator temp = *this;
 			temp++;
 			return temp;
 		}
@@ -38,7 +38,7 @@ namespace mContainers {
 		}
 		mDynIterator operator--(int)
 		{
-			VecIterator temp = *this;
+			mDynIterator temp = *this;
 			temp--;
 			return temp;
 		}

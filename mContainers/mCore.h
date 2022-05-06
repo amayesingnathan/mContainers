@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cmath>
 #include <cassert>
+#include <cstring>
 #include <cfloat>
 #include <initializer_list>
 #include <array>
@@ -13,7 +14,7 @@
 #endif
 
 #define M_NOT_USED(x) ((void)(x))
-#define MAssert(A) assert(A)
+#define mAssert(A) assert(A)
 
 #define	mMaxFloat		FLT_MAX
 #define mEpsilon		FLT_EPSILON
@@ -22,10 +23,10 @@
 #define	mSqrt(x)		sqrtf(x)
 #define	mAtan2(y, x)	atan2f(y, x)
 		
-#define mEnableIf(...)	template<typename = std::enable_if<__VA_ARGS__>::type>
+#define mEnableIf(...)	template<typename std::enable_if<__VA_ARGS__>::type>
 
 /// This function is used to ensure that a floating point number is not a NaN or infinity.
 inline bool mIsValid(float x)
 {
-	return isfinite(x);
+	return std::isfinite(x);
 }

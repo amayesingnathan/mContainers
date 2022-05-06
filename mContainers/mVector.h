@@ -108,25 +108,17 @@ namespace mContainers {
 		using Self = mVec<_Size>;
 		using Iterator = mVecIterator<Self>;
 
-		mVec() = default;
+		mVec() { zero(); }
 		mVec(const Self&) = default;
 
-		mVec(const std::array<float, _Size>& initVals)
+		mVec(std::initializer_list<float> initVals)
 		{
-			for (size_t i = 0; i < _Size; i++)
-				elements[i] = initVals[i];
-		}
-
-		mVec(std::array<float, _Size>&& initVals)
-		{
-			for (size_t i = 0; i < _Size; i++)
-				elements[i] = std::move(initVals[i]);
+			set(initVals);
 		}
 
 		mVec(float scalar)
 		{
-			for (size_t i = 0; i < _Size; i++)
-				this->elements[i] = scalar;
+			set(scalar);
 		}
 
 	public:
@@ -362,13 +354,9 @@ namespace mContainers {
 			return _Size;
 		}
 
-		constexpr void zero()
-		{
-			for (size_t i = 0; i < _Size; i++)
-				this->elements[i] = 0.0f;
-		}
+		constexpr void zero() { memset(elements, 0, _Size * sizeof(float)); }
 
-		constexpr float sum() const
+		float sum() const
 		{
 			float result = 0.0f;
 			for (size_t i = 0; i < _Size; i++)
@@ -386,21 +374,22 @@ namespace mContainers {
 			return mSqrt(resVec.sum());
 		}
 
-		void set(const std::array<float, _Size>& vals)
+		void set(std::initializer_list<float> vals)
 		{
-			for (size_t i = 0; i < _Size; i++)
-				this->elements[i] = vals[i];
-		}
-		void set(std::array<float, _Size>&& vals)
-		{
-			for (size_t i = 0; i < _Size; i++)
-				this->elements[i] = std::move(vals[i]);
-		}
+			size_t i = 0;
+			for (float val : vals)
+			{
+				if (i == _Size) break;
 
-		void setZero()
-		{
-			memset(elements, 0, _Size * sizeof(float));
+				elements[i] = val;
+				i++;
+			}
+
+			size_t size = vals.size();
+			for (size_t k = size; k < _Size; k++)
+				elements[k] = 0;
 		}
+		void set(float scalar) { memset(elements, scalar, _Size * sizeof(float)); }
 
 		bool isValid() const
 		{

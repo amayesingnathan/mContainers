@@ -69,16 +69,19 @@ void print(int x)
     std::cout << x << std::endl;
 }
 
+using namespace mContainers;
+
 int main()
 {
-    mContainers::mDynArray<Vec3> myDynArray;
-    mContainers::mList<Vec3> myList;
-    mContainers::Dictionary<int, std::string> myDict;
+    mDynArray<Vec3> myDynArray;
+    mList<Vec3> myList;
+    Dictionary<int, std::string> myDict;
 
     for (int i = 0; i < 10000; i++)
         myDict.emplace(i, std::to_string(i));
 
     myDict.printCollisionDistData();
 
-    mContainers::mVec2 myVec({1.f, 2.f});
+    mVec2 myVec({ 1.f, 2.f });
+    mMat22 myMat({ {1.f, 1.f, 3.f} });
 }

@@ -18,43 +18,34 @@ namespace mContainers {
 		mMat() = default;
 		mMat(const Matrix&) = default;
 
+		mMat(std::initializer_list<std::initializer_list<float>> initVals)
+		{
+			set(initVals);
+		}
+
 		mMat(float scalar)
 		{
-			if (scalar == 0.0f)
-			{
-				for (size_t i = 0; i < _Rows; i++)
-					rows[i].setZero();
-
-				return;
-			}
-
-			for (size_t i = 0; i < _Rows; i++)
-			{
-				for (size_t j = 0; j < _Columns; j++)
-				{
-					rows[i][j] = scalar;
-				}
-			}
+			set(scalar);
 		}
 
 	public:
 		// Access Operators
 		Row& operator[] (size_t i)
 		{
-			TAssert(i < _Rows);
+			mAssert(i < _Rows);
 
 			return rows[i];
 		}
 		const Row& operator[] (size_t i) const
 		{
-			TAssert(i < _Rows);
+			mAssert(i < _Rows);
 
 			return rows[i];
 		}
 
 		Row operator() (size_t i) const
 		{
-			TAssert(i < _Rows);
+			mAssert(i < _Rows);
 
 			return rows[i];
 		}
@@ -72,7 +63,7 @@ namespace mContainers {
 		template<size_t oRows, size_t oCols>
 		mMat<_Rows, oCols> operator*(const mMat<oRows, oCols>& other)
 		{
-			TAssert(_Columns == oRows);
+			mAssert(_Columns == oRows);
 
 			mMat<_Rows, oCols> result(0.0f);
 			for (size_t i = 0; i < _Rows; i++)
@@ -90,7 +81,7 @@ namespace mContainers {
 		}
 		mVec<_Rows> operator*(const mVec<_Rows>& other)
 		{
-			TAssert(_Rows == _Columns);
+			mAssert(_Rows == _Columns);
 
 			mVec<_Rows> result(0.0f);
 			for (size_t i = 0; i < _Rows; i++)
@@ -168,21 +159,31 @@ namespace mContainers {
 			return result;
 		}
 
-		void set(const std::array<float, _Rows * _Columns>& vals)
+		void set(std::initializer_list<std::initializer_list<float>> vals)
 		{
-			for (size_t i = 0; i < _Rows; i++)
-				this->rows[i] = vals[i];
+			size_t i = 0;
+			for (auto row : vals)
+			{
+				if (i == _Rows) break;
+
+				rows[i].mVec<_Columns>::mVec(row);
+				i++;
+			}
+
+			size_t initSize = vals.size();
+			for (size_t k = initSize; k < _Rows; k++)
+				rows[k].mVec<_Columns>::mVec();
 		}
-		void set(std::array<float, _Rows* _Columns>&& vals)
+		void set(float scalar)
 		{
 			for (size_t i = 0; i < _Rows; i++)
-				this->rows[i] = std::move(vals[i]);
+				rows[i].set(scalar);
 		}
 
-		constexpr void setZero()
+		constexpr void zero()
 		{
 			for (size_t i = 0; i < _Rows; i++)
-				this->rows[i].setZero();
+				rows[i].setZero();
 		}
 	};
 
