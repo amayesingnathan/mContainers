@@ -312,39 +312,39 @@ namespace mContainers {
 
 		// Access Functions for mVec2 and/or mVec3
 
-		mEnableIf(_Size >= 1)
 		float& x()
 		{
+			mStaticAssert(_Size > 0);
 			return this->elements[0];
 		}
 
-		mEnableIf(_Size >= 2)
 		float& y()
 		{
+			mStaticAssert(_Size > 1);
 			return this->elements[1];
 		}
 
-		mEnableIf(_Size >= 3)
 		float& z()
 		{
+			mStaticAssert(_Size > 2);
 			return this->elements[2];
 		}
 
-		mEnableIf(_Size >= 1)
 		float x() const
 		{
+			mStaticAssert(_Size > 0);
 			return this->elements[0];
 		}
 
-		mEnableIf(_Size >= 2)
-			float y() const
+		float y() const
 		{
+			mStaticAssert(_Size > 1);
 			return this->elements[1];
 		}
 
-		mEnableIf(_Size >= 3)
-			float z() const
+		float z() const
 		{
+			mStaticAssert(_Size > 2);
 			return this->elements[2];
 		}
 

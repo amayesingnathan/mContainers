@@ -1,0 +1,3 @@
+[submodule "packages/spdlog"]
+	path = packages/spdlog
+	url = git@github.com:amayesingnathan/spdlog.git

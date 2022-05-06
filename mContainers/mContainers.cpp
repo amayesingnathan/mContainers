@@ -1,5 +1,6 @@
-// Containers.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// mContainers.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
+#include "mpch.h"
 
 #include "mDynArray.h"
 #include "mList.h"
@@ -73,6 +74,8 @@ using namespace mContainers;
 
 int main()
 {
+    mLog::Init();
+
     mDynArray<Vec3> myDynArray;
     mList<Vec3> myList;
     Dictionary<int, std::string> myDict;
@@ -83,5 +86,7 @@ int main()
     myDict.printCollisionDistData();
 
     mVec2 myVec({ 1.f, 2.f });
+    myVec[1];
+    //myVec.z();
     mMat22 myMat({ {1.f, 1.f, 3.f} });
 }

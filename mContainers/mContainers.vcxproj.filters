@@ -18,6 +18,12 @@
     <ClCompile Include="mContainers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mpch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mLog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mUtils.h">
@@ -39,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mpch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -166,13 +166,13 @@ namespace mContainers {
 			{
 				if (i == _Rows) break;
 
-				rows[i].mVec<_Columns>::mVec(row);
+				rows[i].set(row);
 				i++;
 			}
 
 			size_t initSize = vals.size();
 			for (size_t k = initSize; k < _Rows; k++)
-				rows[k].mVec<_Columns>::mVec();
+				rows[k].zero();
 		}
 		void set(float scalar)
 		{

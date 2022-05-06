@@ -1,7 +1,7 @@
 # mContainers
 This is a small set of data structures, mostly just reimplementations of the C++ Standard Library for learning purposes.
 
-Currently implemented are Vectors, Linked Lists, and Dictionaries.
+Currently implemented are Dynamic Arrays, Linked Lists, and Dictionaries. Also included are mathemical vectors and matrices.
 
 This implementation of a Dictionary provides on average constant time lookup, as well as fast iteration, as the underlying data is stored in contigious memory.
 This is achieved by storing the actual key-value pairs in a Vector, and uses a hash table that maps from a key reference to the index of the Vector containing the kv pair.
