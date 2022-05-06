@@ -1,13 +1,11 @@
 // Containers.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include <iostream>
-#include <vector>
-#include <list>
-#include <string>
-#include "Vector.h"
-#include "List.h"
-#include "Dictionary.h"
+#include "mDynArray.h"
+#include "mList.h"
+#include "mDictionary.h"
+#include "mMatrix.h"
+#include "mVector.h"
 
 struct Vec3
 {
@@ -54,14 +52,14 @@ std::ostream& operator<< (std::ostream& os, const Vec3& print)
 }
 
 template<typename T>
-void PrintVec(const mContainers::Vector<T>& vec)
+void PrintVec(const mContainers::mDynArray<T>& vec)
 {
     for (auto& i : vec)
         std::cout << i << std::endl;
 }
 
 template<typename T>
-void PrintVecSize(const mContainers::Vector<T>& vec)
+void PrintVecSize(const mContainers::mDynArray<T>& vec)
 {
     std::cout << "Vector Size: " << vec.size() << std::endl;
 }
@@ -73,8 +71,8 @@ void print(int x)
 
 int main()
 {
-    mContainers::Vector<Vec3> myVec;
-    mContainers::List<Vec3> myList;
+    mContainers::mDynArray<Vec3> myDynArray;
+    mContainers::mList<Vec3> myList;
     mContainers::Dictionary<int, std::string> myDict;
 
     for (int i = 0; i < 10000; i++)
@@ -82,4 +80,5 @@ int main()
 
     myDict.printCollisionDistData();
 
+    mContainers::mVec2 myVec({1.f, 2.f});
 }

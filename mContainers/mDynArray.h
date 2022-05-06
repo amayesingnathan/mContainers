@@ -1,71 +1,71 @@
 #pragma once
 
-#include <cassert>
+#include "mCore.h"
 
 namespace mContainers {
 
-	template<typename Vector>
-	class VecIterator
+	template<typename mDynArray>
+	class mDynIterator
 	{
 	public:
-		using TypeVal = typename Vector::ValType;
-		using TypeRef = typename Vector::ValType&;
-		using TypePtr = typename Vector::ValType*;
+		using TypeVal = typename mDynArray::ValType;
+		using TypeRef = typename mDynArray::ValType&;
+		using TypePtr = typename mDynArray::ValType*;
 
 	private:
 		TypePtr mPtr;
 
 	public:
-		VecIterator(TypePtr ptr)
+		mDynIterator(TypePtr ptr)
 			: mPtr(ptr) {}
 
-		VecIterator& operator++()
+		mDynIterator& operator++()
 		{
 			mPtr++;
 			return *this;
 		}
-		VecIterator operator++(int)
+		mDynIterator operator++(int)
 		{
 			VecIterator temp = *this;
 			temp++;
 			return temp;
 		}
 
-		VecIterator& operator--()
+		mDynIterator& operator--()
 		{
 			mPtr--;
 			return *this;
 		}
-		VecIterator operator--(int)
+		mDynIterator operator--(int)
 		{
 			VecIterator temp = *this;
 			temp--;
 			return temp;
 		}
 
-		VecIterator& operator+= (int offset)
+		mDynIterator& operator+= (int offset)
 		{
 			mPtr += offset;
 			return *this;
 		}
-		VecIterator operator+ (int offset) const
+		mDynIterator operator+ (int offset) const
 		{
-			VecIterator it = *this;
+			mDynIterator it = *this;
 			it += offset;
 			return it;
 		}
-		VecIterator& operator-= (int offset)
+		mDynIterator& operator-= (int offset)
 		{
 			return *this += -offset;
 		}
-		VecIterator operator- (int offset) const
+		mDynIterator operator- (int offset) const
 		{
-			VecIterator it = *this;
+			mDynIterator it = *this;
 			it += -offset;
 			return it;
 		}
 
-		size_t operator- (const VecIterator& rhs) const
+		size_t operator- (const mDynIterator& rhs) const
 		{
 			return mPtr - rhs.mPtr;
 		}
@@ -86,11 +86,11 @@ namespace mContainers {
 			return *mPtr;
 		}
 
-		bool operator== (const VecIterator& other) const
+		bool operator== (const mDynIterator& other) const
 		{
 			return mPtr == other.mPtr;
 		}
-		bool operator!= (const VecIterator& other) const
+		bool operator!= (const mDynIterator& other) const
 		{
 			return !(*this == other);
 		}
@@ -99,11 +99,11 @@ namespace mContainers {
 	};
 
 	template<typename T>
-	class Vector
+	class mDynArray
 	{
 	public:
-		using VecType = Vector<T>;
-		using Iterator = VecIterator<Vector<T>>;
+		using VecType = mDynArray<T>;
+		using Iterator = mDynIterator<mDynArray<T>>;
 		using ValType = T;
 
 	private:
@@ -113,25 +113,25 @@ namespace mContainers {
 		size_t mCapacity;
 
 	public:
-		Vector()
+		mDynArray()
 			: mData(nullptr), mSize(0), mCapacity(0)
 		{ 
 			ReAlloc(4);
 		}
 
-		Vector(size_t count)
+		mDynArray(size_t count)
 			: mData(nullptr), mSize(0), mCapacity(0)
 		{
 			ReAllocConstruct(count);
 		}
 
-		Vector(size_t count, const T& val)
+		mDynArray(size_t count, const T& val)
 			: mData(nullptr), mSize(0), mCapacity(0)
 		{
 			ReAllocConstruct(count, val);
 		}
 
-		~Vector()
+		~mDynArray()
 		{
 			clear();
 			::operator delete(mData, mCapacity * sizeof(T));
@@ -225,7 +225,7 @@ namespace mContainers {
 
 		void erase(Iterator& it)
 		{
-			// Destroy object and go to next in vector
+			// Destroy object and go to next in mDynArray
 			(*it++).~T();
 
 			// Loop from next element after the one to erase to end and overwrite the previous iterator

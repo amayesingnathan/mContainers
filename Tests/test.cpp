@@ -7,8 +7,8 @@ namespace mContainers {
 	class VectorFixtures : public ::testing::Test
 	{
 	protected:
-		Vector<Vec3> defaultConstruct;
-		Vector<Vec3> valueConstruct;
+		mDynArray<Vec3> defaultConstruct;
+		mDynArray<Vec3> valueConstruct;
 
 		Vec3 testObj1;
 		Vec3 testObj2;

@@ -20,16 +20,25 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Utils.h">
+    <ClInclude Include="mUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="List.h">
+    <ClInclude Include="mList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Vector.h">
+    <ClInclude Include="mDictionary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Dictionary.h">
+    <ClInclude Include="mDynArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mMatrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mCore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

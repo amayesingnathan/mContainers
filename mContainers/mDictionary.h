@@ -1,11 +1,10 @@
 #pragma once
 
-#include "List.h"
-#include "Vector.h"
+#include "mCore.h"
+#include "mList.h"
+#include "mDynArray.h"
 
-#include "Utils.h"
-
-#include <iostream>
+#include "mUtils.h"
 
 // Hash Table Default Parameters
 #define DEFAULT_BUCKETS 7
@@ -59,11 +58,11 @@ namespace mContainers {
         };
 
     private:
-        using Bucket = List<KeyIndexPair>;
+        using Bucket = mList<KeyIndexPair>;
     
     private:    
-        Vector<Bucket> mBuckets;
-        Vector<KeyValPair> mData;
+        mDynArray<Bucket> mBuckets;
+        mDynArray<KeyValPair> mData;
         size_t mSize;
         size_t mBucketCount;
         size_t mMaxLoad;

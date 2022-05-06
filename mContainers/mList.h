@@ -1,74 +1,76 @@
 #pragma once
 
+#include "mCore.h"
+
 namespace mContainers {
 
-	template<typename List>
-	class ListIterator
+	template<typename mList>
+	class mListIterator
 	{
 	public:
-		using TypeVal = typename List::ValType;
-		using TypeRef = typename List::ValType&;
-		using TypePtr = typename List::ValType*;
+		using TypeVal = typename mList::ValType;
+		using TypeRef = typename mList::ValType&;
+		using TypePtr = typename mList::ValType*;
 
-		using NodeVal = typename List::NodeType;
-		using NodeRef = typename List::NodeType&;
-		using NodePtr = typename List::NodeType*;
+		using NodeVal = typename mList::NodeType;
+		using NodeRef = typename mList::NodeType&;
+		using NodePtr = typename mList::NodeType*;
 
 	private:
 		NodePtr mNode;
 
 	public:
-		ListIterator(NodePtr node)
+		mListIterator(NodePtr node)
 			: mNode(node) {}
 
-		ListIterator& operator++()
+		mListIterator& operator++()
 		{
 			mNode = mNode->next;
 			return *this;
 		}
-		ListIterator operator++(int)
+		mListIterator operator++(int)
 		{
-			ListIterator it = *this;
+			mListIterator it = *this;
 			mNode = mNode->next;
 			return it;
 		}
 
-		ListIterator& operator+= (size_t offset)
+		mListIterator& operator+= (size_t offset)
 		{
 			for (int i = 0; i < offset; i++)
 				(*this)++;
 
 			return *this;
 		}
-		ListIterator operator+ (size_t offset)
+		mListIterator operator+ (size_t offset)
 		{
-			ListIterator it = *this;
+			mListIterator it = *this;
 			it += offset;
 			return it;
 		}
 
-		ListIterator& operator--()
+		mListIterator& operator--()
 		{
 			mNode = mNode->prev;
 			return *this;
 		}
-		ListIterator operator--(int)
+		mListIterator operator--(int)
 		{
-			ListIterator it = *this;
+			mListIterator it = *this;
 			mNode = mNode->prev;
 			return it;
 		}
 
-		ListIterator& operator-= (size_t offset)
+		mListIterator& operator-= (size_t offset)
 		{
 			for (int i = 0; i < offset; i++)
 				(*this)--;
 
 			return *this;
 		}
-		ListIterator operator- (int offset)
+		mListIterator operator- (int offset)
 		{
-			ListIterator it = *this;
+			mListIterator it = *this;
 			it -= offset;
 			return it;
 		}
@@ -83,11 +85,11 @@ namespace mContainers {
 			return mNode->data;
 		}
 
-		bool operator== (const ListIterator& other) const
+		bool operator== (const mListIterator& other) const
 		{
 			return mNode == other.mNode;
 		}
-		bool operator!= (const ListIterator& other) const
+		bool operator!= (const mListIterator& other) const
 		{
 			return !(*this == other);
 		}
@@ -97,7 +99,7 @@ namespace mContainers {
 	};
 
 	template<typename T>
-	class List
+	class mList
 	{
 	private:
 		struct Node
@@ -120,8 +122,8 @@ namespace mContainers {
 		};
 
 	public:
-		using ListType = List<T>;
-		using Iterator = ListIterator<ListType>;
+		using mListType = mList<T>;
+		using Iterator = mListIterator<mListType>;
 		using ValType = T;
 		using NodeType = Node;
 
@@ -130,9 +132,9 @@ namespace mContainers {
 		size_t mSize;
 
 	public:
-		List() : mHead(nullptr), mSize(0) {}
+		mList() : mHead(nullptr), mSize(0) {}
 
-		List(size_t count)
+		mList(size_t count)
 			: mHead(nullptr), mSize(0)
 		{
 			if (count == 0) return;
@@ -141,14 +143,14 @@ namespace mContainers {
 				emplace_front();
 		}
 
-		List(size_t count, const T& val)
+		mList(size_t count, const T& val)
 			: mHead(nullptr), mSize(0)
 		{
 			for (mSize = 0; mSize < count; mSize++)
 				push_front(val);
 		}
 
-		~List()
+		~mList()
 		{
 			clear();
 		}
