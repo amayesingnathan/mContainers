@@ -2,11 +2,9 @@
 //
 #include "mpch.h"
 
-#include "mDynArray.h"
-#include "mList.h"
-#include "mDictionary.h"
-#include "mMatrix.h"
-#include "mVector.h"
+#include "mContainers.h"
+
+#include <unordered_map>
 
 struct Vec3
 {
@@ -72,21 +70,52 @@ void print(int x)
 
 using namespace mContainers;
 
+void TestStdDict()
+{
+    std::cout << "STD Unordered Map:\n";
+    mTimer timer;
+    std::unordered_map<int, std::string> myDict;
+
+    for (int i = 0; i < 1000000; i++)
+        myDict.emplace(i, std::to_string(i));
+
+    std::cout << "Add Time:\t" + std::to_string(timer.elapsedMillis()) << std::endl;
+
+    timer.reset();
+    size_t count = 0;
+    for (auto& kv : myDict)
+        count++;
+
+    std::cout << "Iteration Time:\t" + std::to_string(timer.elapsedMillis()) << std::endl;
+}
+
+void TestMyDict()
+{
+    std::cout << "mContainer Dictionary:\n";
+    mTimer timer;
+    Dictionary<int, std::string> myDict;
+
+    for (int i = 0; i < 1000000; i++)
+        myDict.emplace(i, std::to_string(i));
+
+    std::cout << "Add Time:\t" + std::to_string(timer.elapsedMillis()) << std::endl;
+
+    timer.reset();
+
+    size_t count = 0;
+    for (auto& kv : myDict)
+        count++;
+
+    std::cout << "Iteration Time:\t" + std::to_string(timer.elapsedMillis()) << std::endl;
+}
+
 int main()
 {
     mLog::Init();
 
-    mDynArray<Vec3> myDynArray;
-    mList<Vec3> myList;
-    Dictionary<int, std::string> myDict;
+    TestMyDict();
 
-    for (int i = 0; i < 10000; i++)
-        myDict.emplace(i, std::to_string(i));
+    std::cout << std::endl;
 
-    myDict.printCollisionDistData();
-
-    mVec2 myVec({ 1.f, 2.f });
-    myVec[1];
-    //myVec.z();
-    mMat22 myMat({ {1.f, 1.f, 3.f} });
+    TestStdDict();
 }

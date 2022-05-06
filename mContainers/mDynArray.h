@@ -106,7 +106,7 @@ namespace mContainers {
 		using Iterator = mDynIterator<mDynArray<T>>;
 		using ValType = T;
 
-	private:
+	protected:
 		T* mData;
 
 		size_t mSize;
@@ -116,7 +116,7 @@ namespace mContainers {
 		mDynArray()
 			: mData(nullptr), mSize(0), mCapacity(0)
 		{ 
-			ReAlloc(4);
+			ReAlloc(5);
 		}
 
 		mDynArray(size_t count)
@@ -131,6 +131,15 @@ namespace mContainers {
 			ReAllocConstruct(count, val);
 		}
 
+	//private: //Only for use by dictionary - must be fully initialised or unitialised, no mix state
+		mDynArray(T* dataBlock, size_t length, bool initialised = false)
+		{
+			mCapacity = length;
+			if (initialised) mSize = length;
+			mData = dataBlock;
+		}
+
+	public:
 		~mDynArray()
 		{
 			clear();
@@ -140,14 +149,14 @@ namespace mContainers {
 		void push_back(const T& value)
 		{
 			if (mSize >= mCapacity)
-				ReAlloc(mCapacity * mCapacity);
+				ReAlloc(2 * mCapacity);
 
 			mData[mSize++] = value;
 		}
 		void push_back(T&& value)
 		{
 			if (mSize >= mCapacity)
-				ReAlloc(mCapacity * mCapacity);
+				ReAlloc(2 * mCapacity);
 
 			mData[mSize++] = std::move(value);
 		}
@@ -156,7 +165,7 @@ namespace mContainers {
 		T& emplace_back(Args&&... args)
 		{
 			if (mSize >= mCapacity)
-				ReAlloc(mCapacity * mCapacity);
+				ReAlloc(2 * mCapacity);
 
 			new(&mData[mSize]) T(std::forward<Args>(args)...);
 			return mData[mSize++];
@@ -176,7 +185,11 @@ namespace mContainers {
 
 			mSize = 0;
 		}
+		
+	protected:
+		T* data() { return mData; }
 
+	public:
 		T& operator[](size_t index)
 		{
 			assert(index < mSize);
@@ -190,7 +203,7 @@ namespace mContainers {
 			return mData[index];
 		}
 
-		void resize(size_t newSize)
+		virtual void resize(size_t newSize)
 		{
 			ReAllocConstruct(newSize);
 		}
@@ -271,38 +284,38 @@ namespace mContainers {
 			return Iterator(mData + mSize);
 		}
 
-	private:
+	protected:
 		void ReAlloc(size_t newCapacity)
 		{
-			T* newBlock = reinterpret_cast<T*>(::operator new(newCapacity * sizeof(T)));
+			T* newBlock = reinterpret_cast<T*>(mAlloc(newCapacity * sizeof(T)));
 
 			size_t newSize = mSize;
 			if (newCapacity < mSize) newSize = newCapacity;
 			for (size_t i = 0; i < newSize; i++)
-				new(&newBlock[i]) T(std::move(mData[i])); // Move construct new data from current data
+				mPlace<T>(&newBlock[i], std::move(mData[i])); // Move construct new data from current data
 
-			if (mData) ::operator delete(mData, mCapacity * sizeof(T));
+			if (mData) mFree(mData, mCapacity * sizeof(T));
 			mData = newBlock;
 			mCapacity = newCapacity;
 		}
 
 		void ReAllocConstruct(size_t newCapacity)
 		{
-			T* newBlock = reinterpret_cast<T*>(::operator new(newCapacity * sizeof(T)));
+			T* newBlock = reinterpret_cast<T*>(mAlloc(newCapacity * sizeof(T)));
 
 			size_t oldSize = mSize;
 			if (newCapacity < mSize) mSize = newCapacity;
 			for (size_t i = 0; i < mSize; i++)
-				new(&newBlock[i]) T(std::move(mData[i])); // Move construct new data from current data
+				mPlace<T>(&newBlock[i], std::move(mData[i])); // Move construct new data from current data
 
 			for (size_t i = mSize; i < newCapacity; i++)
-				new(&newBlock[i]) T(); // Initialise new data if growing
+				mPlace<T>(&newBlock[i]); // Initialise new data if growing
 
 			for (size_t i = 0; i < oldSize; i++)
 				mData[i].~T(); // Call destructor for moved data
 
 			if (mData) 
-				::operator delete(mData, mCapacity * sizeof(T));
+				mFree(mData, mCapacity * sizeof(T));
 			mData = newBlock;
 			mCapacity = newCapacity;
 			mSize = newCapacity;
@@ -310,20 +323,20 @@ namespace mContainers {
 
 		void ReAllocConstruct(size_t newCapacity, const T& val)
 		{
-			T* newBlock = reinterpret_cast<T*>(::operator new(newCapacity * sizeof(T)));
+			T* newBlock = reinterpret_cast<T*>(mAlloc(newCapacity * sizeof(T)));
 
 			size_t newSize = mSize;
 			if (newCapacity < mSize) newSize = newCapacity;
 			for (size_t i = 0; i < newSize; i++)
-				new(&newBlock[i]) T(std::move(mData[i])); // Move construct new data from current data
+				mPlace<T>(&newBlock[i], std::move(mData[i])); // Move construct new data from current data
 
 			for (size_t i = mSize; i < newSize; i++)
-				new(&newBlock[i]) T(); // Initialise new data if growing
+				mPlace<T>(&newBlock[i]); // Initialise new data if growing
 
 			for (size_t i = 0; i < mSize; i++)
 				mData[i].~T(); // Call destructor for moved data
 
-			if (mData) ::operator delete(mData, mCapacity * sizeof(T));
+			if (mData) mFree(mData, mCapacity * sizeof(T));
 			mData = newBlock;
 			mCapacity = newCapacity;
 			mSize = newCapacity;

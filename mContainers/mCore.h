@@ -76,9 +76,74 @@ namespace mContainers {
 		static std::shared_ptr<spdlog::logger> sLogger;
 	};
 
+	class mTimer
+	{
+	public:
+		mTimer()
+		{
+			reset();
+		}
+
+		void reset()
+		{
+			mStart = std::chrono::high_resolution_clock::now();
+		}
+
+		double elapsed()
+		{
+			return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - mStart).count() * 0.001 * 0.001 * 0.001;
+		}
+
+		double elapsedMillis()
+		{
+			return elapsed() * 1000.0;
+		}
+
+	private:
+		std::chrono::time_point<std::chrono::high_resolution_clock> mStart;
+	};
+
 	/// This function is used to ensure that a floating point number is not a NaN or infinity.
 	inline bool mIsValid(float x)
 	{
 		return std::isfinite(x);
+	}
+
+	// Memory allocators. Modify these to use your own allocator.
+	inline void* mAlloc_Default(size_t size)
+	{
+		return ::operator new(size);
+	}
+
+	inline void mFree_Default(void* mem)
+	{
+		::operator delete(mem);
+	}
+	inline void mFree_Default(void* mem, size_t size)
+	{
+		::operator delete(mem, size);
+	}
+
+	/// Implement this function to use your own memory allocator.
+	inline void* mAlloc(size_t size)
+	{
+		return mAlloc_Default(size);
+	}
+
+	/// If you implement mAlloc, you should also implement this function.
+	inline void mFree(void* mem)
+	{
+		mFree_Default(mem);
+	}
+	/// If you implement mAlloc, you should also implement this function.
+	inline void mFree(void* mem, size_t size)
+	{
+		mFree_Default(mem, size);
+	}
+
+	template<typename T, typename... Args>
+	inline T* mPlace(void* mem, Args&&... args)
+	{
+		return new (mem) T(std::forward<Args>(args)...);
 	}
 }

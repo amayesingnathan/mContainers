@@ -3,17 +3,16 @@
 #include "mCore.h"
 #include "mList.h"
 #include "mDynArray.h"
+#include "mBlock.h"
 
 #include "mUtils.h"
 
 // Hash Table Default Parameters
 #define DEFAULT_BUCKETS 7
 #define LOAD_SCALE      2
-#define MAX_BUCKET_SIZE 4
+#define MAX_BUCKET_SIZE 10
 
 namespace mContainers {
-    
-    static bool sLimitBucketSize = false;
         
     // Key and Value type must be default constructable for linked list head
     template<typename Key, typename Val, size_t MaxLoad = 1>
@@ -58,10 +57,57 @@ namespace mContainers {
         };
 
     private:
-        using Bucket = mList<KeyIndexPair>;
+        //using Bucket = std::list<KeyIndexPair>;
+        using Bucket = mBlock<KeyIndexPair>;
     
+        class BucketList : public mDynArray<Bucket>
+        {
+        public:
+            BucketList(size_t count)
+            {
+                this->ReAllocConstruct(count);
+                KeyIndexPair* newBlock = reinterpret_cast<KeyIndexPair*>(mAlloc(count * MAX_BUCKET_SIZE * sizeof(KeyIndexPair)));
+
+                KeyIndexPair* bucketBlock = newBlock;
+                for (size_t i = 0; i < count; i++)
+                {
+                    new(&this->mData[i]) Bucket(bucketBlock, MAX_BUCKET_SIZE);
+                    bucketBlock += MAX_BUCKET_SIZE;
+                }
+                mRoot = newBlock;
+            }
+
+            ~BucketList()
+            {
+                this->clear();
+                mFree(mRoot, this->mSize * MAX_BUCKET_SIZE * sizeof(KeyIndexPair));
+            }
+
+            void resize(size_t count) override
+            {
+                for (size_t i = 0; i < this->mSize; i++)
+                    this->mData[i].~Bucket();
+                mFree(mRoot, this->mSize * MAX_BUCKET_SIZE * sizeof(KeyIndexPair));
+                this->mSize = 0;
+                this->ReAllocConstruct(count);
+
+                KeyIndexPair* newBlock = reinterpret_cast<KeyIndexPair*>(mAlloc(count * MAX_BUCKET_SIZE * sizeof(KeyIndexPair)));
+                KeyIndexPair* bucketBlock = newBlock;
+
+                for (size_t i = 0; i < count; i++)
+                {
+                    mPlace<Bucket>(&this->mData[i], bucketBlock, MAX_BUCKET_SIZE);
+                    bucketBlock += MAX_BUCKET_SIZE;
+                }
+                mRoot = newBlock;
+            }
+
+        private:
+            KeyIndexPair* mRoot;
+        };
+
     private:    
-        mDynArray<Bucket> mBuckets;
+        BucketList mBuckets;
         mDynArray<KeyValPair> mData;
         size_t mSize;
         size_t mBucketCount;
@@ -127,8 +173,7 @@ namespace mContainers {
         // This will cause any existing buckets to become invalidated if a rehashing occurs.
         Val& Add(const Key& key)
         {
-            if (((mSize / mBucketCount) >= mMaxLoad) ||
-                (sLimitBucketSize && mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE)) ReHash();
+            if ((mSize / mBucketCount) >= mMaxLoad || mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE) ReHash();
 
             KeyValPair& result = mData.emplace_back(key);
             mBuckets[Hash(key)].emplace_front(result.key, mSize++);
@@ -138,8 +183,7 @@ namespace mContainers {
 
         Val& Add(const Key& key, const Val& value)
         {
-            if (((mSize / mBucketCount) >= mMaxLoad) ||
-                (sLimitBucketSize && mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE)) ReHash();
+            if ((mSize / mBucketCount) >= mMaxLoad || mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE) ReHash();
 
             KeyValPair& result = mData.emplace_back(key, value);
             mBuckets[Hash(key)].emplace_front(result.key, mSize++);
@@ -150,11 +194,10 @@ namespace mContainers {
         template<typename... Args>
         Val& Add(const Key& key, Args&&... args)
         {
-            if ((mSize / mBucketCount) >= mMaxLoad ||
-                (sLimitBucketSize && mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE)) ReHash();
+            if ((mSize / mBucketCount) >= mMaxLoad || mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE) ReHash();
 
             KeyValPair& result = mData.emplace_back(key, std::forward<Args>(args)...);
-            mBuckets[Hash(key)].emplace_front(result.key, mSize++);
+            mBuckets[Hash(key)].emplace_back(result.key, mSize++);
 
             return result.value;
         }
@@ -173,13 +216,12 @@ namespace mContainers {
         void ReHash() 
         {
             mBucketCount = Utils::NextPrime(mBucketCount * 2);
-            mBuckets.clear();
             mBuckets.resize(mBucketCount);
 
             for (size_t i = 0; i < mData.size(); i++)
             {
                 const Key& key = mData[i].key;
-                mBuckets[Hash(key)].emplace_front(key, i);
+                mBuckets[Hash(key)].emplace_back(key, i);
             }
         }
         

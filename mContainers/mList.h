@@ -101,7 +101,7 @@ namespace mContainers {
 	template<typename T>
 	class mList
 	{
-	private:
+	public:
 		struct Node
 		{
 			T data;
@@ -125,9 +125,10 @@ namespace mContainers {
 		using mListType = mList<T>;
 		using Iterator = mListIterator<mListType>;
 		using ValType = T;
-		using NodeType = Node;
 
 	private:
+		friend class mDictionary;
+
 		Node* mHead;
 		size_t mSize;
 
@@ -230,7 +231,6 @@ namespace mContainers {
 
 			return newNode->data;
 		}
-
 
 		Iterator find(const Iterator& begin, const Iterator& end, const T& value)
 		{
