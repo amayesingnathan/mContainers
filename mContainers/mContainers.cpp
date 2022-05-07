@@ -76,7 +76,7 @@ void TestStdDict()
     mTimer timer;
     std::unordered_map<int, std::string> myDict;
 
-    for (int i = 0; i < 1000000; i++)
+    for (int i = 0; i < 10000; i++)
         myDict.emplace(i, std::to_string(i));
 
     std::cout << "Add Time:\t" + std::to_string(timer.elapsedMillis()) << std::endl;
@@ -95,7 +95,7 @@ void TestMyDict()
     mTimer timer;
     Dictionary<int, std::string> myDict;
 
-    for (int i = 0; i < 1000000; i++)
+    for (int i = 0; i < 10000; i++)
         myDict.emplace(i, std::to_string(i));
 
     std::cout << "Add Time:\t" + std::to_string(timer.elapsedMillis()) << std::endl;

@@ -24,9 +24,6 @@
     <ClCompile Include="mLog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mAllocator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mUtils.h">
@@ -54,9 +51,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mContainers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mAllocator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mBlock.h">

@@ -164,7 +164,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="mAllocator.cpp" />
     <ClCompile Include="mContainers.cpp" />
     <ClCompile Include="mLog.cpp" />
     <ClCompile Include="mpch.cpp">
@@ -175,7 +174,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mAllocator.h" />
     <ClInclude Include="mBlock.h" />
     <ClInclude Include="mContainers.h" />
     <ClInclude Include="mDynArray.h" />

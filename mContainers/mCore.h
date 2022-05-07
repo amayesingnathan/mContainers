@@ -38,13 +38,17 @@
 #define	mSqrt(x)		sqrtf(x)
 #define	mAtan2(y, x)	atan2f(y, x)
 
+// Hash Table Default Parameters
+#define DEFAULT_BUCKETS 7
+#define LOAD_SCALE      2
+#define MAX_BUCKET_SIZE 5
+
 //Client log macros
 #define M_TRACE(...)			::mContainers::mLog::GetLogger()->trace(__VA_ARGS__)
 #define M_INFO(...)				::mContainers::mLog::GetLogger()->info(__VA_ARGS__)
 #define M_WARN(...)				::mContainers::mLog::GetLogger()->warn(__VA_ARGS__)
 #define M_ERROR(...)			::mContainers::mLog::GetLogger()->error(__VA_ARGS__)
 #define M_CRITICAL(...)			::mContainers::mLog::GetLogger()->critical(__VA_ARGS__)
-
 
 #ifdef M_ENABLE_ASSERTS
 	// Alteratively we could use the same "default" message for both "WITH_MSG" and "NO_MSG" and
@@ -109,41 +113,66 @@ namespace mContainers {
 		return std::isfinite(x);
 	}
 
-	// Memory allocators. Modify these to use your own allocator.
-	inline void* mAlloc_Default(size_t size)
+	class Memory
 	{
-		return ::operator new(size);
-	}
+	public:
+		template<typename T>
+		inline static T* Alloc(size_t size)
+		{
+			return reinterpret_cast<T*>(mAlloc(size * sizeof(T)));
+		}
 
-	inline void mFree_Default(void* mem)
-	{
-		::operator delete(mem);
-	}
-	inline void mFree_Default(void* mem, size_t size)
-	{
-		::operator delete(mem, size);
-	}
+		template<typename T>
+		inline static void Free(T* data, size_t size)
+		{
+			mFree(data, size * sizeof(T));
+		}
 
-	/// Implement this function to use your own memory allocator.
-	inline void* mAlloc(size_t size)
-	{
-		return mAlloc_Default(size);
-	}
+		template<typename T, typename... Args>
+		inline static T* Emplace(void* mem, Args&&... args)
+		{
+			return new (mem) T(std::forward<Args>(args)...);
+		}
 
-	/// If you implement mAlloc, you should also implement this function.
-	inline void mFree(void* mem)
-	{
-		mFree_Default(mem);
-	}
-	/// If you implement mAlloc, you should also implement this function.
-	inline void mFree(void* mem, size_t size)
-	{
-		mFree_Default(mem, size);
-	}
+		template<typename T>
+		inline static void SetZero(void* data, size_t size)
+		{
+			memset(data, 0, size * sizeof(T));
+		}
 
-	template<typename T, typename... Args>
-	inline T* mPlace(void* mem, Args&&... args)
-	{
-		return new (mem) T(std::forward<Args>(args)...);
-	}
+	private:
+		/// Implement this function to use your own memory allocator.
+		inline static void* mAlloc(size_t size)
+		{
+			return mAlloc_Default(size);
+		}
+
+		// Memory allocators. Modify these to use your own allocator.
+		inline static void* mAlloc_Default(size_t size)
+		{
+			return ::operator new(size);
+		}
+
+		/// If you implement mAlloc, you should also implement this function.
+		inline static void mFree(void* mem)
+		{
+			mFree_Default(mem);
+		}
+		/// If you implement mAlloc, you should also implement this function.
+		inline static void mFree(void* mem, size_t size)
+		{
+			mFree_Default(mem, size);
+		}
+
+		inline static void mFree_Default(void* mem)
+		{
+			::operator delete(mem);
+		}
+		inline static void mFree_Default(void* mem, size_t size)
+		{
+			::operator delete(mem, size);
+		}
+
+	};
+
 }

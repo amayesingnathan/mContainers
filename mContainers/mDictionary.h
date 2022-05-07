@@ -3,14 +3,8 @@
 #include "mCore.h"
 #include "mList.h"
 #include "mDynArray.h"
-#include "mBlock.h"
 
 #include "mUtils.h"
-
-// Hash Table Default Parameters
-#define DEFAULT_BUCKETS 7
-#define LOAD_SCALE      2
-#define MAX_BUCKET_SIZE 10
 
 namespace mContainers {
         
@@ -58,73 +52,138 @@ namespace mContainers {
 
     private:
         //using Bucket = std::list<KeyIndexPair>;
-        using Bucket = mBlock<KeyIndexPair>;
+
+        class Bucket
+        {
+        private:
+            KeyIndexPair* mData;
+            size_t mSize;
+
+        public:
+            Bucket(KeyIndexPair* dataBlock) : mData(dataBlock), mSize(0) {}
+            ~Bucket()
+            {
+                for (size_t i = 0; i < mSize; i++)
+                    mData[i].~KeyIndexPair();
+            }
+
+            template<typename... Args>
+            KeyIndexPair& emplace_back(Args&&... args)
+            {
+                mAssert(mSize < MAX_BUCKET_SIZE, "Bucket is full!")
+
+                new(&mData[mSize]) KeyIndexPair(std::forward<Args>(args)...);
+                return mData[mSize++];
+            }
+
+            KeyIndexPair& operator[](size_t index)
+            {
+                mAssert(index < mSize, "Accessing unitialised entry!");
+
+                return mData[index];
+            }
+            const KeyIndexPair& operator[](size_t index) const
+            {
+                mAssert(index < size, "Accessing unitialised entry!");
+
+                return mData[index];
+            }
+
+            KeyIndexPair* find(const KeyIndexPair& other)
+            {
+                for (size_t i = 0; i < mSize; i++)
+                    if (mData[i].key == other) return &mData[i];
+
+                return nullptr;
+            }
+
+            size_t size() const { return mSize; }
+        };
     
-        class BucketList : public mDynArray<Bucket>
+        class BucketList
         {
         public:
-            BucketList(size_t count)
+            BucketList(size_t count = DEFAULT_BUCKETS)
             {
-                this->ReAllocConstruct(count);
-                KeyIndexPair* newBlock = reinterpret_cast<KeyIndexPair*>(mAlloc(count * MAX_BUCKET_SIZE * sizeof(KeyIndexPair)));
-
-                KeyIndexPair* bucketBlock = newBlock;
-                for (size_t i = 0; i < count; i++)
-                {
-                    new(&this->mData[i]) Bucket(bucketBlock, MAX_BUCKET_SIZE);
-                    bucketBlock += MAX_BUCKET_SIZE;
-                }
-                mRoot = newBlock;
+                Build(count);
             }
 
             ~BucketList()
             {
-                this->clear();
-                mFree(mRoot, this->mSize * MAX_BUCKET_SIZE * sizeof(KeyIndexPair));
+                Reset();
             }
 
-            void resize(size_t count) override
+            Bucket& operator[](size_t index)
             {
-                for (size_t i = 0; i < this->mSize; i++)
-                    this->mData[i].~Bucket();
-                mFree(mRoot, this->mSize * MAX_BUCKET_SIZE * sizeof(KeyIndexPair));
-                this->mSize = 0;
-                this->ReAllocConstruct(count);
+                mAssert(index < mBucketCount, "Index out of range!");
 
-                KeyIndexPair* newBlock = reinterpret_cast<KeyIndexPair*>(mAlloc(count * MAX_BUCKET_SIZE * sizeof(KeyIndexPair)));
-                KeyIndexPair* bucketBlock = newBlock;
+                return mBuckets[index];
+            }
+            const Bucket& operator[](size_t index) const
+            {
+                mAssert(index < mBucketCount, "Index out of range!");
 
-                for (size_t i = 0; i < count; i++)
+                return mBuckets[index];
+            }
+
+            void resize(size_t count)
+            {
+                Reset();
+                Build(count);
+            }
+
+            size_t count() const { return mBucketCount; }
+
+        private:
+            void Build(size_t count)
+            {
+                mBucketCount = count;
+                mBuckets = Memory::Alloc<Bucket>(mBucketCount);
+                mBase = Memory::Alloc<KeyIndexPair>(mBucketCount * MAX_BUCKET_SIZE);
+                Memory::SetZero<KeyIndexPair>(mBase, mBucketCount * MAX_BUCKET_SIZE);
+
+                KeyIndexPair* bucketBlock = mBase;
+                for (size_t i = 0; i < mBucketCount; i++)
                 {
-                    mPlace<Bucket>(&this->mData[i], bucketBlock, MAX_BUCKET_SIZE);
+                    Memory::Emplace<Bucket>(&mBuckets[i], bucketBlock);
                     bucketBlock += MAX_BUCKET_SIZE;
                 }
-                mRoot = newBlock;
+            }
+
+            void Reset()
+            {
+                for (size_t i = 0; i < mBucketCount; i++)
+                    mBuckets[i].~Bucket();
+
+                Memory::Free<Bucket>(mBuckets, mBucketCount);
+                Memory::Free<KeyIndexPair>(mBase, mBucketCount * MAX_BUCKET_SIZE);
             }
 
         private:
-            KeyIndexPair* mRoot;
+            KeyIndexPair* mBase;
+            Bucket* mBuckets;
+            size_t mBucketCount;
         };
 
-    private:    
-        BucketList mBuckets;
+    private:
         mDynArray<KeyValPair> mData;
+        BucketList mBuckets;
         size_t mSize;
         size_t mBucketCount;
         size_t mMaxLoad;
     
     public:
         Dictionary()
-            : mBuckets(DEFAULT_BUCKETS), mSize(0), mBucketCount(DEFAULT_BUCKETS), mMaxLoad(MaxLoad) {}
+            : mSize(0), mBucketCount(DEFAULT_BUCKETS), mMaxLoad(MaxLoad) {}
         
     public: // Access Operators
         Val& operator[](const Key& key)
         {
             Bucket& bucket = mBuckets[Hash(key)]; // Cache bucket for the given key
 
-            if (bucket.size() == 0) return Add(key);
-            auto it = bucket.find(key);
-            if (it != bucket.end()) return mData[(*it).index];
+            if (bucket.size == 0) return Add(key);
+            KeyIndexPair* it = bucket.find(key);
+            if (it) return mData[it->index];
             
             return Add(key);
         }
@@ -133,12 +192,12 @@ namespace mContainers {
         {
             const Bucket& bucket = mBuckets[Hash(key)]; // Cache bucket for the given key
             
-            assert(bucket.size() == 0);
+            mAssert(bucket.size == 0, "Bucket is empty!");
             
-            const auto it = bucket.find(key);
-            assert(it != bucket.end());
+            const KeyIndexPair it = bucket.find(key);
+            mAssert(it, "Key not in hash table!");
             
-            return (*it).value;
+            return it->value;
         }
         
     public: // Iterator Methods
@@ -154,20 +213,6 @@ namespace mContainers {
         template<typename... Args>
         Val& emplace(const Key& key, Args&&... args)
         { return Add(key, std::forward<Args>(args)...); }
-    
-        void erase(const Key& key)
-        {
-            Bucket& bucket = mBuckets[Hash(key)]; // Cache bucket for the given key
-            if (bucket.size() == 0) return;
-            
-            if (auto it = bucket.find(key) != bucket.end()) 
-            { 
-                bucket.erase(it); 
-                mSize--; 
-                if (auto it = mData.find(&key) != bucket.end()) mData.erase(it);
-            }
-            
-        }
 
     private: // Underlying Element Modifier Methods
         // This will cause any existing buckets to become invalidated if a rehashing occurs.
@@ -176,7 +221,7 @@ namespace mContainers {
             if ((mSize / mBucketCount) >= mMaxLoad || mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE) ReHash();
 
             KeyValPair& result = mData.emplace_back(key);
-            mBuckets[Hash(key)].emplace_front(result.key, mSize++);
+            mBuckets[Hash(key)].emplace_back(result.key, mSize++);
 
             return result.value;
         }
@@ -186,7 +231,7 @@ namespace mContainers {
             if ((mSize / mBucketCount) >= mMaxLoad || mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE) ReHash();
 
             KeyValPair& result = mData.emplace_back(key, value);
-            mBuckets[Hash(key)].emplace_front(result.key, mSize++);
+            mBuckets[Hash(key)].emplace_back(result.key, mSize++);
 
             return result.value;
         }
@@ -209,7 +254,7 @@ namespace mContainers {
         }
         size_t Hash(const Key* key) const
         {
-            assert(key);            
+            mAssert(key, "Key must not be null!");
             return Utils::SuperFastHash(*key) % mBucketCount;
         }
         

@@ -103,7 +103,6 @@ namespace mContainers {
 	class mBlock
 	{
 	public:
-		using BlockType = mBlock<T>;
 		using Iterator = mBlockIterator<mBlock<T>>;
 		using ValType = T;
 

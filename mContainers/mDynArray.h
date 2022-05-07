@@ -287,35 +287,35 @@ namespace mContainers {
 	protected:
 		void ReAlloc(size_t newCapacity)
 		{
-			T* newBlock = reinterpret_cast<T*>(mAlloc(newCapacity * sizeof(T)));
+			T* newBlock = Memory::Alloc<T>(newCapacity);
 
 			size_t newSize = mSize;
 			if (newCapacity < mSize) newSize = newCapacity;
 			for (size_t i = 0; i < newSize; i++)
-				mPlace<T>(&newBlock[i], std::move(mData[i])); // Move construct new data from current data
+				Memory::Emplace<T>(&newBlock[i], std::move(mData[i])); // Move construct new data from current data
 
-			if (mData) mFree(mData, mCapacity * sizeof(T));
+			if (mData) Memory::Free<T>(mData, mCapacity);
 			mData = newBlock;
 			mCapacity = newCapacity;
 		}
 
 		void ReAllocConstruct(size_t newCapacity)
 		{
-			T* newBlock = reinterpret_cast<T*>(mAlloc(newCapacity * sizeof(T)));
+			T* newBlock = Memory::Alloc<T>(newCapacity);
 
 			size_t oldSize = mSize;
 			if (newCapacity < mSize) mSize = newCapacity;
 			for (size_t i = 0; i < mSize; i++)
-				mPlace<T>(&newBlock[i], std::move(mData[i])); // Move construct new data from current data
+				Memory::Emplace<T>(&newBlock[i], std::move(mData[i])); // Move construct new data from current data
 
 			for (size_t i = mSize; i < newCapacity; i++)
-				mPlace<T>(&newBlock[i]); // Initialise new data if growing
+				Memory::Emplace<T>(&newBlock[i]); // Initialise new data if growing
 
 			for (size_t i = 0; i < oldSize; i++)
 				mData[i].~T(); // Call destructor for moved data
 
 			if (mData) 
-				mFree(mData, mCapacity * sizeof(T));
+				Memory::Free<T>(mData, mCapacity);
 			mData = newBlock;
 			mCapacity = newCapacity;
 			mSize = newCapacity;
@@ -323,20 +323,21 @@ namespace mContainers {
 
 		void ReAllocConstruct(size_t newCapacity, const T& val)
 		{
-			T* newBlock = reinterpret_cast<T*>(mAlloc(newCapacity * sizeof(T)));
+			T* newBlock = Memory::Alloc<T>(newCapacity);
 
 			size_t newSize = mSize;
 			if (newCapacity < mSize) newSize = newCapacity;
 			for (size_t i = 0; i < newSize; i++)
-				mPlace<T>(&newBlock[i], std::move(mData[i])); // Move construct new data from current data
+				Memory::Emplace<T>(&newBlock[i], std::move(mData[i])); // Move construct new data from current data
 
 			for (size_t i = mSize; i < newSize; i++)
-				mPlace<T>(&newBlock[i]); // Initialise new data if growing
+				Memory::Emplace<T>(&newBlock[i]); // Initialise new data if growing
 
 			for (size_t i = 0; i < mSize; i++)
 				mData[i].~T(); // Call destructor for moved data
 
-			if (mData) mFree(mData, mCapacity * sizeof(T));
+			if (mData)
+				Memory::Free<T>(mData, mCapacity);
 			mData = newBlock;
 			mCapacity = newCapacity;
 			mSize = newCapacity;
