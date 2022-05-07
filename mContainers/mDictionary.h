@@ -167,7 +167,9 @@ namespace mContainers {
 
     private:
         mDynArray<KeyValPair> mData;
-        BucketList mBuckets;
+        using Bucket2 = mList<KeyIndexPair>; // Linked List Implementation
+        mDynArray<Bucket2> mBuckets; // Linked List Implementation
+        //BucketList mBuckets; // Custom Allocator
         size_t mSize;
         size_t mBucketCount;
         size_t mMaxLoad;
@@ -242,7 +244,8 @@ namespace mContainers {
             if ((mSize / mBucketCount) >= mMaxLoad || mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE) ReHash();
 
             KeyValPair& result = mData.emplace_back(key, std::forward<Args>(args)...);
-            mBuckets[Hash(key)].emplace_back(result.key, mSize++);
+            //mBuckets[Hash(key)].emplace_back(result.key, mSize++); // Custom Allocator
+            mBuckets[Hash(key)].emplace_front(result.key, mSize++); // Linked List Test
 
             return result.value;
         }
@@ -261,12 +264,14 @@ namespace mContainers {
         void ReHash() 
         {
             mBucketCount = Utils::NextPrime(mBucketCount * 2);
+            mBuckets.clear(); //Linked List test
             mBuckets.resize(mBucketCount);
 
             for (size_t i = 0; i < mData.size(); i++)
             {
                 const Key& key = mData[i].key;
-                mBuckets[Hash(key)].emplace_back(key, i);
+                //mBuckets[Hash(key)].emplace_back(key, i);
+                mBuckets[Hash(key)].emplace_front(key, i);
             }
         }
         
