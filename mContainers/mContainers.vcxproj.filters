@@ -32,7 +32,7 @@
     <ClInclude Include="mList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mDictionary.h">
+    <ClInclude Include="CustAllocatorDict.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mDynArray.h">
@@ -56,10 +56,10 @@
     <ClInclude Include="mBlock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TestDictionary.h">
+    <ClInclude Include="ClosedHashDict.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OldDict.h">
+    <ClInclude Include="mDictionary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

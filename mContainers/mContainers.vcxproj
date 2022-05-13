@@ -178,14 +178,14 @@
     <ClInclude Include="mContainers.h" />
     <ClInclude Include="mDynArray.h" />
     <ClInclude Include="mList.h" />
-    <ClInclude Include="mDictionary.h" />
+    <ClInclude Include="CustAllocatorDict.h" />
     <ClInclude Include="mMatrix.h" />
     <ClInclude Include="mCore.h" />
     <ClInclude Include="mpch.h" />
     <ClInclude Include="mUtils.h" />
     <ClInclude Include="mVector.h" />
-    <ClInclude Include="OldDict.h" />
-    <ClInclude Include="TestDictionary.h" />
+    <ClInclude Include="mDictionary.h" />
+    <ClInclude Include="ClosedHashDict.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
