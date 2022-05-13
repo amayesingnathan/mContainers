@@ -3,7 +3,7 @@
 
 #include "mCore.h"
 
-namespace mContainers {
+namespace mC {
 
 	template<typename mBlock>
 	class mBlockIterator

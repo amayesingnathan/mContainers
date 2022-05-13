@@ -11,7 +11,7 @@
                        +(uint32_t)(((const uint8_t *)(d))[0]) )
 #endif
 
-namespace mContainers {
+namespace mC {
 
     namespace Utils {
 

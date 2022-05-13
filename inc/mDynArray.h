@@ -3,7 +3,7 @@
 #include "mCore.h"
 #include "mBlock.h"
 
-namespace mContainers {
+namespace mC {
 
 	template<typename mDynArray>
 	class mDynIterator

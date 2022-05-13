@@ -6,7 +6,7 @@
 
 #include "mUtils.h"
 
-namespace mContainers {
+namespace mC {
         
     // Key and Value type must be default constructable for linked list head
     template<typename Key, typename Val, size_t MaxLoad = 1>

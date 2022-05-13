@@ -2,7 +2,7 @@
 
 #include "mCore.h"
 
-namespace mContainers {
+namespace mC {
 
 	template<typename mVec>
 	class mVecIterator

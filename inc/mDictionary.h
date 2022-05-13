@@ -8,7 +8,7 @@
 #include "mCore.h"
 
 // Hash Table Default Parameters
-namespace mContainers {
+namespace mC {
 
     // Key and Value type must be default constructable for linked list head
     template<typename Key, typename Val, uint64_t MaxLoad = 1>

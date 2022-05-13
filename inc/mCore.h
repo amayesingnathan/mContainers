@@ -45,11 +45,11 @@
 #define DEFAULT_SEED	64687421
 
 //Client log macros
-#define M_TRACE(...)			::mContainers::mLog::GetLogger()->trace(__VA_ARGS__)
-#define M_INFO(...)				::mContainers::mLog::GetLogger()->info(__VA_ARGS__)
-#define M_WARN(...)				::mContainers::mLog::GetLogger()->warn(__VA_ARGS__)
-#define M_ERROR(...)			::mContainers::mLog::GetLogger()->error(__VA_ARGS__)
-#define M_CRITICAL(...)			::mContainers::mLog::GetLogger()->critical(__VA_ARGS__)
+#define M_TRACE(...)			::mC::mLog::GetLogger()->trace(__VA_ARGS__)
+#define M_INFO(...)				::mC::mLog::GetLogger()->info(__VA_ARGS__)
+#define M_WARN(...)				::mC::mLog::GetLogger()->warn(__VA_ARGS__)
+#define M_ERROR(...)			::mC::mLog::GetLogger()->error(__VA_ARGS__)
+#define M_CRITICAL(...)			::mC::mLog::GetLogger()->critical(__VA_ARGS__)
 
 #ifdef M_ENABLE_ASSERTS
 	// Alteratively we could use the same "default" message for both "WITH_MSG" and "NO_MSG" and
@@ -69,7 +69,7 @@
 	#define mStaticAssert(...)
 #endif
 
-namespace mContainers {
+namespace mC {
 
 	class mLog
 	{

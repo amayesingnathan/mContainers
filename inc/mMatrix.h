@@ -2,7 +2,7 @@
 
 #include "mVector.h"
 
-namespace mContainers {
+namespace mC {
 
 	template<uint64_t _Rows, uint64_t _Columns>
 	class mMat
