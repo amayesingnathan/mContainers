@@ -28,26 +28,26 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -98,7 +98,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)packages\spdlog\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>inc;$(ProjectDir)dependencies\spdlog\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>mpch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -116,7 +116,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)packages\spdlog\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>inc;$(ProjectDir)dependencies\spdlog\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>mpch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -134,7 +134,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)packages\spdlog\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>inc;$(ProjectDir)dependencies\spdlog\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>mpch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -152,7 +152,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)packages\spdlog\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>inc;$(ProjectDir)dependencies\spdlog\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>mpch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -164,8 +164,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="mContainers.cpp" />
-    <ClCompile Include="mLog.cpp" />
     <ClCompile Include="mpch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -174,18 +172,18 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mBlock.h" />
-    <ClInclude Include="mContainers.h" />
-    <ClInclude Include="mDynArray.h" />
-    <ClInclude Include="mList.h" />
-    <ClInclude Include="CustAllocatorDict.h" />
-    <ClInclude Include="mMatrix.h" />
-    <ClInclude Include="mCore.h" />
+    <ClInclude Include="inc\mBlock.h" />
+    <ClInclude Include="inc\mContainers.h" />
+    <ClInclude Include="inc\mDynArray.h" />
+    <ClInclude Include="inc\mList.h" />
+    <ClInclude Include="inc\CustAllocatorDict.h" />
+    <ClInclude Include="inc\mMatrix.h" />
+    <ClInclude Include="inc\mCore.h" />
     <ClInclude Include="mpch.h" />
-    <ClInclude Include="mUtils.h" />
-    <ClInclude Include="mVector.h" />
-    <ClInclude Include="mDictionary.h" />
-    <ClInclude Include="ClosedHashDict.h" />
+    <ClInclude Include="inc\mUtils.h" />
+    <ClInclude Include="inc\mVector.h" />
+    <ClInclude Include="inc\mDictionary.h" />
+    <ClInclude Include="inc\ClosedHashDict.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

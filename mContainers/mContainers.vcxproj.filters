@@ -15,51 +15,45 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mContainers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mpch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mLog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mUtils.h">
+    <ClInclude Include="inc\mUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mList.h">
+    <ClInclude Include="inc\mList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CustAllocatorDict.h">
+    <ClInclude Include="inc\CustAllocatorDict.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mDynArray.h">
+    <ClInclude Include="inc\mDynArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mVector.h">
+    <ClInclude Include="inc\mVector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mMatrix.h">
+    <ClInclude Include="inc\mMatrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mCore.h">
+    <ClInclude Include="inc\mCore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mpch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mContainers.h">
+    <ClInclude Include="inc\mContainers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mBlock.h">
+    <ClInclude Include="inc\mBlock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ClosedHashDict.h">
+    <ClInclude Include="inc\ClosedHashDict.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mDictionary.h">
+    <ClInclude Include="inc\mDictionary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
