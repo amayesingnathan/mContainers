@@ -35,14 +35,14 @@ namespace mContainers {
 			return it;
 		}
 
-		mListIterator& operator+= (size_t offset)
+		mListIterator& operator+= (uint64_t offset)
 		{
 			for (int i = 0; i < offset; i++)
 				(*this)++;
 
 			return *this;
 		}
-		mListIterator operator+ (size_t offset)
+		mListIterator operator+ (uint64_t offset)
 		{
 			mListIterator it = *this;
 			it += offset;
@@ -61,7 +61,7 @@ namespace mContainers {
 			return it;
 		}
 
-		mListIterator& operator-= (size_t offset)
+		mListIterator& operator-= (uint64_t offset)
 		{
 			for (int i = 0; i < offset; i++)
 				(*this)--;
@@ -125,17 +125,16 @@ namespace mContainers {
 		using mListType = mList<T>;
 		using Iterator = mListIterator<mListType>;
 		using ValType = T;
+		using NodeType = Node;
 
 	private:
-		friend class mDictionary;
-
 		Node* mHead;
-		size_t mSize;
+		uint64_t mSize;
 
 	public:
 		mList() : mHead(nullptr), mSize(0) {}
 
-		mList(size_t count)
+		mList(uint64_t count)
 			: mHead(nullptr), mSize(0)
 		{
 			if (count == 0) return;
@@ -144,7 +143,7 @@ namespace mContainers {
 				emplace_front();
 		}
 
-		mList(size_t count, const T& val)
+		mList(uint64_t count, const T& val)
 			: mHead(nullptr), mSize(0)
 		{
 			for (mSize = 0; mSize < count; mSize++)
@@ -166,12 +165,12 @@ namespace mContainers {
 		const Iterator end() const{	return Iterator(nullptr);	}
 
 		bool empty() const { return mSize == 0; }
-		size_t size() const { return mSize; };
-		size_t max_size() const { return -1; }
+		uint64_t size() const { return mSize; };
+		uint64_t max_size() const { return -1; }
 
 		void clear()
 		{
-			for (size_t i = 0; i < mSize; i++)
+			for (uint64_t i = 0; i < mSize; i++)
 				pop_front();
 			mSize = 0;
 		}

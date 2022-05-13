@@ -184,6 +184,8 @@
     <ClInclude Include="mpch.h" />
     <ClInclude Include="mUtils.h" />
     <ClInclude Include="mVector.h" />
+    <ClInclude Include="OldDict.h" />
+    <ClInclude Include="TestDictionary.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

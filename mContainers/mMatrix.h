@@ -4,7 +4,7 @@
 
 namespace mContainers {
 
-	template<size_t _Rows, size_t _Columns>
+	template<uint64_t _Rows, uint64_t _Columns>
 	class mMat
 	{
 	public:
@@ -30,20 +30,20 @@ namespace mContainers {
 
 	public:
 		// Access Operators
-		Row& operator[] (size_t i)
+		Row& operator[] (uint64_t i)
 		{
 			mAssert(i < _Rows);
 
 			return rows[i];
 		}
-		const Row& operator[] (size_t i) const
+		const Row& operator[] (uint64_t i) const
 		{
 			mAssert(i < _Rows);
 
 			return rows[i];
 		}
 
-		Row operator() (size_t i) const
+		Row operator() (uint64_t i) const
 		{
 			mAssert(i < _Rows);
 
@@ -54,23 +54,23 @@ namespace mContainers {
 		constexpr Matrix operator+(const Matrix& other) const
 		{
 			Matrix result(0.0f);
-			for (size_t i = 0; i < _Rows; i++)
+			for (uint64_t i = 0; i < _Rows; i++)
 				result[i] = (*this)[i] + other[i];
 
 			return result;
 		}
 
-		template<size_t oRows, size_t oCols>
+		template<uint64_t oRows, uint64_t oCols>
 		mMat<_Rows, oCols> operator*(const mMat<oRows, oCols>& other)
 		{
 			mAssert(_Columns == oRows);
 
 			mMat<_Rows, oCols> result(0.0f);
-			for (size_t i = 0; i < _Rows; i++)
+			for (uint64_t i = 0; i < _Rows; i++)
 			{
-				for (size_t j = 0; j < oCols; j++)
+				for (uint64_t j = 0; j < oCols; j++)
 				{
-					for (size_t k = 0; k < _Columns; k++)
+					for (uint64_t k = 0; k < _Columns; k++)
 					{
 						result[i][j] += ((*this)[i][k] * other[k][j]);
 					}
@@ -84,9 +84,9 @@ namespace mContainers {
 			mAssert(_Rows == _Columns);
 
 			mVec<_Rows> result(0.0f);
-			for (size_t i = 0; i < _Rows; i++)
+			for (uint64_t i = 0; i < _Rows; i++)
 			{
-				for (size_t j = 0; j < _Columns; j++)
+				for (uint64_t j = 0; j < _Columns; j++)
 				{
 					result[i] += ((*this)[i][j] * other[j]);
 				}
@@ -97,7 +97,7 @@ namespace mContainers {
 
 		Matrix& operator*=(float scalar)
 		{
-			for (size_t i = 0; i < _Rows; i++)
+			for (uint64_t i = 0; i < _Rows; i++)
 				this->rows[i] *= scalar;
 
 			return *this;
@@ -105,7 +105,7 @@ namespace mContainers {
 		Matrix operator*(float scalar)
 		{
 			Matrix result;
-			for (size_t i = 0; i < _Rows; i++)
+			for (uint64_t i = 0; i < _Rows; i++)
 				result[i] = this->rows[i] * scalar;
 
 			return result;
@@ -118,7 +118,7 @@ namespace mContainers {
 
 		Matrix& operator/=(float scalar)
 		{
-			for (size_t i = 0; i < _Rows; i++)
+			for (uint64_t i = 0; i < _Rows; i++)
 				this->rows[i] /= scalar;
 
 			return *this;
@@ -126,7 +126,7 @@ namespace mContainers {
 		Matrix operator/(float scalar)
 		{
 			Matrix result;
-			for (size_t i = 0; i < _Rows; i++)
+			for (uint64_t i = 0; i < _Rows; i++)
 				result[i] = this->rows[i] / scalar;
 
 			return result;
@@ -135,25 +135,25 @@ namespace mContainers {
 		// IOStream Operators
 		friend std::ostream& operator<<(std::ostream& out, const Matrix& mat)
 		{
-			for (size_t i = 0; i < _Rows; i++)
+			for (uint64_t i = 0; i < _Rows; i++)
 				out << mat(i) << "\n";
 
 			return out;
 		}
 	public:
-		constexpr size_t rowCount() const noexcept
+		constexpr uint64_t rowCount() const noexcept
 		{
 			return _Rows;
 		}
-		constexpr size_t colCount() const noexcept
+		constexpr uint64_t colCount() const noexcept
 		{
 			return _Columns;
 		}
 
-		mVec<_Rows> toVec(size_t col = 0) const
+		mVec<_Rows> toVec(uint64_t col = 0) const
 		{
 			mVec<_Rows> result;
-			for (size_t i = 0; i < _Rows; i++)
+			for (uint64_t i = 0; i < _Rows; i++)
 				result[i] = rows[i][col];
 
 			return result;
@@ -161,7 +161,7 @@ namespace mContainers {
 
 		void set(std::initializer_list<std::initializer_list<float>> vals)
 		{
-			size_t i = 0;
+			uint64_t i = 0;
 			for (auto row : vals)
 			{
 				if (i == _Rows) break;
@@ -170,19 +170,19 @@ namespace mContainers {
 				i++;
 			}
 
-			size_t initSize = vals.size();
-			for (size_t k = initSize; k < _Rows; k++)
+			uint64_t initSize = vals.size();
+			for (uint64_t k = initSize; k < _Rows; k++)
 				rows[k].zero();
 		}
 		void set(float scalar)
 		{
-			for (size_t i = 0; i < _Rows; i++)
+			for (uint64_t i = 0; i < _Rows; i++)
 				rows[i].set(scalar);
 		}
 
 		constexpr void zero()
 		{
-			for (size_t i = 0; i < _Rows; i++)
+			for (uint64_t i = 0; i < _Rows; i++)
 				rows[i].setZero();
 		}
 	};

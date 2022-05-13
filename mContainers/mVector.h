@@ -66,7 +66,7 @@ namespace mContainers {
 		}
 
 
-		size_t operator- (const mVecIterator& rhs)
+		uint64_t operator- (const mVecIterator& rhs)
 		{
 			return mPtr - rhs.mPtr;
 		}
@@ -98,7 +98,7 @@ namespace mContainers {
 		operator fPtr() { return mPtr; }
 	};
 
-	template<size_t _Size>
+	template<uint64_t _Size>
 	class mVec
 	{
 	private:
@@ -145,14 +145,14 @@ namespace mContainers {
 
 		constexpr Self& operator+=(float scalar)
 		{
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				this->elements[i] += scalar;
 
 			return *this;
 		}
 		constexpr Self& operator+=(const Self& other)
 		{
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				this->elements[i] += other.elements[i];
 
 			return *this;
@@ -160,7 +160,7 @@ namespace mContainers {
 		constexpr Self operator+(const Self& other) const
 		{
 			Self result;
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				result.elements[i] = this->elements[i] + other.elements[i];
 
 			return result;
@@ -168,7 +168,7 @@ namespace mContainers {
 		constexpr Self operator+(float scalar) const
 		{
 			Self result;
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				result.elements[i] = this->elements[i] + scalar;
 
 			return result;
@@ -176,14 +176,14 @@ namespace mContainers {
 
 		constexpr Self& operator-=(float scalar)
 		{
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				this->elements[i] -= scalar;
 
 			return *this;
 		}
 		constexpr Self& operator-=(const Self& other)
 		{
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				this->elements[i] -= other.elements[i];
 
 			return *this;
@@ -191,7 +191,7 @@ namespace mContainers {
 		constexpr Self operator-(const Self& other) const
 		{
 			Self result;
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				result.elements[i] = this->elements[i] - other.elements[i];
 
 			return result;
@@ -199,7 +199,7 @@ namespace mContainers {
 		constexpr Self operator-(float scalar) const
 		{
 			Self result;
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				result.elements[i] = this->elements[i] - scalar;
 
 			return result;
@@ -208,14 +208,14 @@ namespace mContainers {
 		Self operator -() const
 		{
 			Self result;
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				result.elements[i] = -this->elements[i];
 			return result;
 		}
 
 		constexpr Self& operator*=(float scalar)
 		{
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				this->elements[i] *= scalar;
 
 			return *this;
@@ -228,7 +228,7 @@ namespace mContainers {
 		constexpr Self operator*(float scalar)
 		{
 			Self result;
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				result.elements[i] = this->elements[i] * scalar;
 
 			return result;
@@ -237,14 +237,14 @@ namespace mContainers {
 		constexpr Self& operator/=(float scalar)
 		{
 			float inverse = 1.f / scalar;
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				this->elements[i] /= inverse;
 		}
 		constexpr Self operator/(float scalar)
 		{
 			Self result;
 			float inverse = 1.f / scalar;
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				result.elements[i] = this->elements[i] / inverse;
 
 			return result;
@@ -252,7 +252,7 @@ namespace mContainers {
 
 		bool operator<(const Self& other)
 		{
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 			{
 				if (this->elements[i] > other.elements[i]) return false;
 			}
@@ -264,7 +264,7 @@ namespace mContainers {
 
 		bool operator== (const Self& other)
 		{
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 			{
 				if (this->elements[i] != other.elements[i]) return false;
 			}
@@ -280,7 +280,7 @@ namespace mContainers {
 
 		friend std::ostream& operator<<(std::ostream& out, const Self& vec)
 		{
-			for (size_t i = 0; i < _Size - 1; i++)
+			for (uint64_t i = 0; i < _Size - 1; i++)
 				out << vec(i) << ", ";
 			out << vec(_Size - 1);
 
@@ -290,20 +290,20 @@ namespace mContainers {
 
 		// Access Operators
 
-		float& operator[] (size_t i)
+		float& operator[] (uint64_t i)
 		{
 			mAssert(i < _Size);
 
 			return this->elements[i];
 		}
-		const float& operator[] (size_t i) const
+		const float& operator[] (uint64_t i) const
 		{
 			mAssert(i < _Size);
 
 			return this->elements[i];
 		}
 
-		float operator() (size_t i) const
+		float operator() (uint64_t i) const
 		{
 			mAssert(i < _Size);
 
@@ -349,7 +349,7 @@ namespace mContainers {
 		}
 
 	public:
-		constexpr size_t size() const noexcept
+		constexpr uint64_t size() const noexcept
 		{
 			return _Size;
 		}
@@ -359,7 +359,7 @@ namespace mContainers {
 		float sum() const
 		{
 			float result = 0.0f;
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				result += this->elements[i];
 
 			return result;
@@ -368,7 +368,7 @@ namespace mContainers {
 		constexpr float abs() const
 		{
 			Self resVec(0.0f);
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				resVec.elements[i] = this->elements[i] * this->elements[i];
 
 			return mSqrt(resVec.sum());
@@ -376,7 +376,7 @@ namespace mContainers {
 
 		void set(std::initializer_list<float> vals)
 		{
-			size_t i = 0;
+			uint64_t i = 0;
 			for (float val : vals)
 			{
 				if (i == _Size) break;
@@ -385,8 +385,8 @@ namespace mContainers {
 				i++;
 			}
 
-			size_t size = vals.size();
-			for (size_t k = size; k < _Size; k++)
+			uint64_t size = vals.size();
+			for (uint64_t k = size; k < _Size; k++)
 				elements[k] = 0;
 		}
 		void set(float scalar) { memset(elements, scalar, _Size * sizeof(float)); }
@@ -394,7 +394,7 @@ namespace mContainers {
 		bool isValid() const
 		{
 			bool result;
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 			{
 				result = mIsValid(elements[i]);
 				if (!result) return result;
@@ -407,7 +407,7 @@ namespace mContainers {
 		float length() const
 		{
 			float square = 0.0f;
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				square += (this->elements[i] * this->elements[i]);
 
 			return mSqrt(square);
@@ -418,7 +418,7 @@ namespace mContainers {
 		float lengthSquared() const
 		{
 			float square = 0.0f;
-			for (size_t i = 0; i < _Size; i++)
+			for (uint64_t i = 0; i < _Size; i++)
 				square += (this->elements[i] * this->elements[i]);
 
 			return square;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mCore.h"
+#include "mBlock.h"
 
 namespace mContainers {
 
@@ -65,7 +66,7 @@ namespace mContainers {
 			return it;
 		}
 
-		size_t operator- (const mDynIterator& rhs) const
+		uint64_t operator- (const mDynIterator& rhs) const
 		{
 			return mPtr - rhs.mPtr;
 		}
@@ -109,8 +110,8 @@ namespace mContainers {
 	protected:
 		T* mData;
 
-		size_t mSize;
-		size_t mCapacity;
+		uint64_t mSize;
+		uint64_t mCapacity;
 
 	public:
 		mDynArray()
@@ -119,20 +120,20 @@ namespace mContainers {
 			ReAlloc(5);
 		}
 
-		mDynArray(size_t count)
+		mDynArray(uint64_t count)
 			: mData(nullptr), mSize(0), mCapacity(0)
 		{
 			ReAllocConstruct(count);
 		}
 
-		mDynArray(size_t count, const T& val)
+		mDynArray(uint64_t count, const T& val)
 			: mData(nullptr), mSize(0), mCapacity(0)
 		{
 			ReAllocConstruct(count, val);
 		}
 
 	//private: //Only for use by dictionary - must be fully initialised or unitialised, no mix state
-		mDynArray(T* dataBlock, size_t length, bool initialised = false)
+		mDynArray(T* dataBlock, uint64_t length, bool initialised = false)
 		{
 			mCapacity = length;
 			if (initialised) mSize = length;
@@ -167,7 +168,7 @@ namespace mContainers {
 			if (mSize >= mCapacity)
 				ReAlloc(2 * mCapacity);
 
-			new(&mData[mSize]) T(std::forward<Args>(args)...);
+			Memory::Emplace<T>(&mData[mSize], std::forward<Args>(args)...);
 			return mData[mSize++];
 		}
 
@@ -180,7 +181,7 @@ namespace mContainers {
 
 		void clear()
 		{
-			for (size_t i = 0; i < mSize; i++)
+			for (uint64_t i = 0; i < mSize; i++)
 				mData[i].~T();
 
 			mSize = 0;
@@ -190,36 +191,48 @@ namespace mContainers {
 		T* data() { return mData; }
 
 	public:
-		T& operator[](size_t index)
+		T& operator[](uint64_t index)
 		{
-			assert(index < mSize);
+			mAssert(index < mSize, "Index out of range!");
 
 			return mData[index];
 		}
-		const T& operator[](size_t index) const
+		const T& operator[](uint64_t index) const
 		{
-			assert(index < mSize);
+			mAssert(index < mSize, "Index out of range!");
 
 			return mData[index];
 		}
 
-		virtual void resize(size_t newSize)
+		VecType& operator=(const mBlock<T>& other)
+		{
+			clear();
+			::operator delete(mData, mCapacity * sizeof(T));
+
+			mData = other.mData;
+			mSize = other.mSize;
+			mCapacity = other.mCapacity;
+
+			return *this;
+		}
+
+		virtual void resize(uint64_t newSize)
 		{
 			ReAllocConstruct(newSize);
 		}
-		void resize(size_t newSize, const T& value)
+		void resize(uint64_t newSize, const T& value)
 		{
 			ReAllocConstruct(newSize, value);
 		}
-		void reserve(size_t newCapacity)
+		void reserve(uint64_t newCapacity)
 		{
 			if (newCapacity <= mCapacity) return;
 
 			ReAlloc(newCapacity);
 		}
 
-		size_t size() const { return mSize; }
-		size_t capacity() const { return mCapacity; }
+		uint64_t size() const { return mSize; }
+		uint64_t capacity() const { return mCapacity; }
 
 		// O(n) time linear search (are other searches possible with iterators?)
 		Iterator find(const Iterator& begin, const Iterator& end, const T& value)
@@ -285,13 +298,13 @@ namespace mContainers {
 		}
 
 	protected:
-		void ReAlloc(size_t newCapacity)
+		void ReAlloc(uint64_t newCapacity)
 		{
 			T* newBlock = Memory::Alloc<T>(newCapacity);
 
-			size_t newSize = mSize;
+			uint64_t newSize = mSize;
 			if (newCapacity < mSize) newSize = newCapacity;
-			for (size_t i = 0; i < newSize; i++)
+			for (uint64_t i = 0; i < newSize; i++)
 				Memory::Emplace<T>(&newBlock[i], std::move(mData[i])); // Move construct new data from current data
 
 			if (mData) Memory::Free<T>(mData, mCapacity);
@@ -299,19 +312,19 @@ namespace mContainers {
 			mCapacity = newCapacity;
 		}
 
-		void ReAllocConstruct(size_t newCapacity)
+		void ReAllocConstruct(uint64_t newCapacity)
 		{
 			T* newBlock = Memory::Alloc<T>(newCapacity);
 
-			size_t oldSize = mSize;
+			uint64_t oldSize = mSize;
 			if (newCapacity < mSize) mSize = newCapacity;
-			for (size_t i = 0; i < mSize; i++)
+			for (uint64_t i = 0; i < mSize; i++)
 				Memory::Emplace<T>(&newBlock[i], std::move(mData[i])); // Move construct new data from current data
 
-			for (size_t i = mSize; i < newCapacity; i++)
+			for (uint64_t i = mSize; i < newCapacity; i++)
 				Memory::Emplace<T>(&newBlock[i]); // Initialise new data if growing
 
-			for (size_t i = 0; i < oldSize; i++)
+			for (uint64_t i = 0; i < oldSize; i++)
 				mData[i].~T(); // Call destructor for moved data
 
 			if (mData) 
@@ -321,19 +334,19 @@ namespace mContainers {
 			mSize = newCapacity;
 		}
 
-		void ReAllocConstruct(size_t newCapacity, const T& val)
+		void ReAllocConstruct(uint64_t newCapacity, const T& val)
 		{
 			T* newBlock = Memory::Alloc<T>(newCapacity);
 
-			size_t newSize = mSize;
+			uint64_t newSize = mSize;
 			if (newCapacity < mSize) newSize = newCapacity;
-			for (size_t i = 0; i < newSize; i++)
+			for (uint64_t i = 0; i < newSize; i++)
 				Memory::Emplace<T>(&newBlock[i], std::move(mData[i])); // Move construct new data from current data
 
-			for (size_t i = mSize; i < newSize; i++)
+			for (uint64_t i = mSize; i < newSize; i++)
 				Memory::Emplace<T>(&newBlock[i]); // Initialise new data if growing
 
-			for (size_t i = 0; i < mSize; i++)
+			for (uint64_t i = 0; i < mSize; i++)
 				mData[i].~T(); // Call destructor for moved data
 
 			if (mData)

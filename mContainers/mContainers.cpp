@@ -3,6 +3,7 @@
 #include "mpch.h"
 
 #include "mContainers.h"
+#include "OldDict.h"
 
 #include <unordered_map>
 
@@ -68,45 +69,83 @@ void print(int x)
     std::cout << x << std::endl;
 }
 
+#define ITERATIONS 10000
+
 using namespace mContainers;
 
 void TestStdDict()
 {
     std::cout << "STD Unordered Map:\n";
-    mTimer timer;
     std::unordered_map<int, std::string> myDict;
 
-    for (int i = 0; i < 10000; i++)
+    mTimer timer;
+    for (int i = 0; i < ITERATIONS; i++)
         myDict.emplace(i, std::to_string(i));
 
-    std::cout << "Add Time:\t" + std::to_string(timer.elapsedMillis()) << std::endl;
+    std::cout << "Add " + std::to_string(timer.elapsedMillis()) << std::endl;
 
     timer.reset();
-    size_t count = 0;
+    uint64_t count = 0;
     for (auto& kv : myDict)
         count++;
 
-    std::cout << "Iteration Time:\t" + std::to_string(timer.elapsedMillis()) << std::endl;
+    std::cout << "Iteration " + std::to_string(timer.elapsedMillis()) << std::endl;
+
+    timer.reset();
+    for (int i = 0; i < ITERATIONS; i++)
+        auto a = myDict[i];
+
+    std::cout << "Access " + std::to_string(timer.elapsedMillis()) << std::endl;
 }
 
 void TestMyDict()
 {
     std::cout << "mContainer Dictionary:\n";
-    mTimer timer;
-    Dictionary<int, std::string> myDict;
+    mDictionary<int, std::string> myDict;
 
-    for (int i = 0; i < 10000; i++)
+    mTimer timer;
+    for (int i = 0; i < ITERATIONS; i++)
         myDict.emplace(i, std::to_string(i));
 
-    std::cout << "Add Time:\t" + std::to_string(timer.elapsedMillis()) << std::endl;
+    std::cout << "Add " + std::to_string(timer.elapsedMillis()) << std::endl;
 
     timer.reset();
-
-    size_t count = 0;
+    uint64_t count = 0;
     for (auto& kv : myDict)
         count++;
 
-    std::cout << "Iteration Time:\t" + std::to_string(timer.elapsedMillis()) << std::endl;
+    std::cout << "Iteration " + std::to_string(timer.elapsedMillis()) << std::endl;
+
+    timer.reset();
+    for (int i = 0; i < ITERATIONS; i++)
+        auto a = myDict[i];
+
+    std::cout << "Access " + std::to_string(timer.elapsedMillis()) << std::endl;
+}
+
+void TestOldDict()
+{
+    std::cout << "mContainer Old Dictionary:\n";
+    OldDictionary<int, std::string> myDict;
+
+    mTimer timer;   
+    for (int i = 0; i < ITERATIONS; i++)
+        myDict.emplace(i, std::to_string(i));
+
+    std::cout << "Add " + std::to_string(timer.elapsedMillis()) << std::endl;
+
+    timer.reset();
+    uint64_t count = 0;
+    for (auto& kv : myDict)
+        count++;
+
+    std::cout << "Iteration " + std::to_string(timer.elapsedMillis()) << std::endl;
+
+    timer.reset();
+    for (int i = 0; i < ITERATIONS; i++)
+        auto a = myDict[i];
+
+    std::cout << "Access " + std::to_string(timer.elapsedMillis()) << std::endl;
 }
 
 int main()
@@ -115,6 +154,10 @@ int main()
 
     TestMyDict();
 
+    std::cout << std::endl;
+
+    TestOldDict();
+    
     std::cout << std::endl;
 
     TestStdDict();

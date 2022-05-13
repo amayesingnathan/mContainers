@@ -56,5 +56,11 @@
     <ClInclude Include="mBlock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TestDictionary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OldDict.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

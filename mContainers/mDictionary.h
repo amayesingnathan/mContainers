@@ -10,7 +10,7 @@ namespace mContainers {
         
     // Key and Value type must be default constructable for linked list head
     template<typename Key, typename Val, size_t MaxLoad = 1>
-    class Dictionary 
+    class mDictionary 
     {
     private:
         struct KeyValPair
@@ -65,6 +65,7 @@ namespace mContainers {
             {
                 for (size_t i = 0; i < mSize; i++)
                     mData[i].~KeyIndexPair();
+                mSize = 0;
             }
 
             template<typename... Args>
@@ -89,7 +90,7 @@ namespace mContainers {
                 return mData[index];
             }
 
-            KeyIndexPair* find(const KeyIndexPair& other)
+            KeyIndexPair* find(const Key& other)
             {
                 for (size_t i = 0; i < mSize; i++)
                     if (mData[i].key == other) return &mData[i];
@@ -140,7 +141,6 @@ namespace mContainers {
                 mBucketCount = count;
                 mBuckets = Memory::Alloc<Bucket>(mBucketCount);
                 mBase = Memory::Alloc<KeyIndexPair>(mBucketCount * MAX_BUCKET_SIZE);
-                Memory::SetZero<KeyIndexPair>(mBase, mBucketCount * MAX_BUCKET_SIZE);
 
                 KeyIndexPair* bucketBlock = mBase;
                 for (size_t i = 0; i < mBucketCount; i++)
@@ -167,15 +167,13 @@ namespace mContainers {
 
     private:
         mDynArray<KeyValPair> mData;
-        using Bucket2 = mList<KeyIndexPair>; // Linked List Implementation
-        mDynArray<Bucket2> mBuckets; // Linked List Implementation
-        //BucketList mBuckets; // Custom Allocator
+        BucketList mBuckets; // Custom Allocator
         size_t mSize;
         size_t mBucketCount;
         size_t mMaxLoad;
     
     public:
-        Dictionary()
+        mDictionary()
             : mSize(0), mBucketCount(DEFAULT_BUCKETS), mMaxLoad(MaxLoad) {}
         
     public: // Access Operators
@@ -183,9 +181,10 @@ namespace mContainers {
         {
             Bucket& bucket = mBuckets[Hash(key)]; // Cache bucket for the given key
 
-            if (bucket.size == 0) return Add(key);
+            if (bucket.size() == 0) return Add(key);
+
             KeyIndexPair* it = bucket.find(key);
-            if (it) return mData[it->index];
+            if (it) return mData[it->index].value;
             
             return Add(key);
         }
@@ -194,7 +193,7 @@ namespace mContainers {
         {
             const Bucket& bucket = mBuckets[Hash(key)]; // Cache bucket for the given key
             
-            mAssert(bucket.size == 0, "Bucket is empty!");
+            mAssert(bucket.size() == 0, "Bucket is empty!");
             
             const KeyIndexPair it = bucket.find(key);
             mAssert(it, "Key not in hash table!");
@@ -244,8 +243,7 @@ namespace mContainers {
             if ((mSize / mBucketCount) >= mMaxLoad || mBuckets[Hash(key)].size() == MAX_BUCKET_SIZE) ReHash();
 
             KeyValPair& result = mData.emplace_back(key, std::forward<Args>(args)...);
-            //mBuckets[Hash(key)].emplace_back(result.key, mSize++); // Custom Allocator
-            mBuckets[Hash(key)].emplace_front(result.key, mSize++); // Linked List Test
+            mBuckets[Hash(key)].emplace_back(result.key, mSize++); // Custom Allocator
 
             return result.value;
         }
@@ -253,25 +251,23 @@ namespace mContainers {
     private: // Hashing Related Methods
         size_t Hash(const Key& key) const
         {
-            return Utils::SuperFastHash(key) % mBucketCount;
+            return Utils::Hash(key) % mBucketCount;
         }
         size_t Hash(const Key* key) const
         {
             mAssert(key, "Key must not be null!");
-            return Utils::SuperFastHash(*key) % mBucketCount;
+            return Utils::Hash(*key) % mBucketCount;
         }
         
         void ReHash() 
         {
             mBucketCount = Utils::NextPrime(mBucketCount * 2);
-            mBuckets.clear(); //Linked List test
             mBuckets.resize(mBucketCount);
 
             for (size_t i = 0; i < mData.size(); i++)
             {
                 const Key& key = mData[i].key;
-                //mBuckets[Hash(key)].emplace_back(key, i);
-                mBuckets[Hash(key)].emplace_front(key, i);
+                mBuckets[Hash(key)].emplace_back(key, i);
             }
         }
         

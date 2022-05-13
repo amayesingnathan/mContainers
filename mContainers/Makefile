@@ -1,5 +1,5 @@
 CXX = g++
-INC_DIR = ../packages/spdlog/include
+INC_DIR = packages/spdlog/include
 CXXFLAGS = -std=c++17 -Wall -I$(INC_DIR)
 
 OBJECTS = mContainers.o mLog.o

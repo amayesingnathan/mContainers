@@ -66,7 +66,7 @@ namespace mContainers {
 			return it;
 		}
 
-		size_t operator- (const mBlockIterator& rhs) const
+		uint64_t operator- (const mBlockIterator& rhs) const
 		{
 			return mPtr - rhs.mPtr;
 		}
@@ -99,6 +99,7 @@ namespace mContainers {
 		operator TypePtr() { return mPtr; }
 	};
 
+	// A class for holding a temporary block of memory. The underlying memory must be allocated/free'd by whatever manages it.
 	template<typename T>
 	class mBlock
 	{
@@ -106,40 +107,43 @@ namespace mContainers {
 		using Iterator = mBlockIterator<mBlock<T>>;
 		using ValType = T;
 
-	protected:
+	private:
+		template<typename U>
+		friend class mDynArray;
+
 		T* mData;
 
-		size_t mSize;
-		size_t mCapacity;
+		uint64_t mSize;
+		uint64_t mCapacity;
 
 	public:
 		mBlock() : mData(nullptr), mSize(0), mCapacity(0) {}
 
-		mBlock(T* dataBlock, size_t length)
+		mBlock(T* dataBlock, uint64_t length, bool init = false)
 		{
 			mCapacity = length;
 			mSize = 0;
 			mData = dataBlock;
+
+			if (!init) return;
+			for (uint64_t i = 0; i < length; i++)
+				Memory::Emplace<T>(&mData[i]);
+			mSize = length;
 		}
 		template<typename... Args>
-		mBlock(T* dataBlock, size_t length, Args&&... args)
+		mBlock(T* dataBlock, uint64_t length, Args&&... args)
 		{
 			mCapacity = length;
 			mSize = length;
 			mData = dataBlock;
-			for (size_t i = 0; i < length; i++)
-				new(&mData[i]) T(std::forward<Args>(args)...);
+			for (uint64_t i = 0; i < length; i++)
+				Memory::Emplace<T>(&mData[i], std::forward<Args>(args)...);
 		}
 
 	public:
-		~mBlock()
-		{
-			clear();
-		}
-
 		void clear()
 		{
-			for (size_t i = 0; i < mSize; i++)
+			for (uint64_t i = 0; i < mSize; i++)
 				mData[i].~T();
 
 			mSize = 0;
@@ -149,13 +153,13 @@ namespace mContainers {
 		T* data() { return mData; }
 
 	public:
-		T& operator[](size_t index)
+		T& operator[](uint64_t index)
 		{
 			assert(index < mSize);
 
 			return mData[index];
 		}
-		const T& operator[](size_t index) const
+		const T& operator[](uint64_t index) const
 		{
 			assert(index < mSize);
 
@@ -171,8 +175,8 @@ namespace mContainers {
 			return mData[mSize++];
 		}
 
-		size_t size() const { return mSize; }
-		size_t capacity() const { return mCapacity; }
+		uint64_t size() const { return mSize; }
+		uint64_t capacity() const { return mCapacity; }
 
 		// O(n) time linear search (are other searches possible with iterators?)
 		Iterator find(const Iterator& begin, const Iterator& end, const T& value)

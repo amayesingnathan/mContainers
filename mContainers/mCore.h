@@ -42,6 +42,7 @@
 #define DEFAULT_BUCKETS 7
 #define LOAD_SCALE      2
 #define MAX_BUCKET_SIZE 5
+#define DEFAULT_SEED	64687421
 
 //Client log macros
 #define M_TRACE(...)			::mContainers::mLog::GetLogger()->trace(__VA_ARGS__)
@@ -117,15 +118,25 @@ namespace mContainers {
 	{
 	public:
 		template<typename T>
-		inline static T* Alloc(size_t size)
+		inline static T* Alloc(uint64_t size)
 		{
 			return reinterpret_cast<T*>(mAlloc(size * sizeof(T)));
 		}
+		template<typename T>
+		inline static T* AllocDebug(uint64_t size)
+		{
+			return reinterpret_cast<T*>(mAllocDebug(size * sizeof(T)));
+		}
 
 		template<typename T>
-		inline static void Free(T* data, size_t size)
+		inline static void Free(T* data, uint64_t size)
 		{
 			mFree(data, size * sizeof(T));
+		}
+		template<typename T>
+		inline static void FreeDebug(T* data, uint64_t size)
+		{
+			mFreeDebug(data, size * sizeof(T));
 		}
 
 		template<typename T, typename... Args>
@@ -135,42 +146,43 @@ namespace mContainers {
 		}
 
 		template<typename T>
-		inline static void SetZero(void* data, size_t size)
+		inline static void SetZero(void* data, uint64_t size)
 		{
 			memset(data, 0, size * sizeof(T));
 		}
 
 	private:
 		/// Implement this function to use your own memory allocator.
-		inline static void* mAlloc(size_t size)
+		inline static void* mAlloc(uint64_t size)
 		{
 			return mAlloc_Default(size);
 		}
 
 		// Memory allocators. Modify these to use your own allocator.
-		inline static void* mAlloc_Default(size_t size)
+		inline static void* mAlloc_Default(uint64_t size)
 		{
+			return ::operator new(size);
+		}
+		inline static void* mAllocDebug(uint64_t size)
+		{
+			M_TRACE("Allocated {0} bytes of memory", size);
 			return ::operator new(size);
 		}
 
 		/// If you implement mAlloc, you should also implement this function.
-		inline static void mFree(void* mem)
-		{
-			mFree_Default(mem);
-		}
-		/// If you implement mAlloc, you should also implement this function.
-		inline static void mFree(void* mem, size_t size)
+		inline static void mFree(void* mem, uint64_t size)
 		{
 			mFree_Default(mem, size);
 		}
 
-		inline static void mFree_Default(void* mem)
-		{
-			::operator delete(mem);
-		}
-		inline static void mFree_Default(void* mem, size_t size)
+		inline static void mFree_Default(void* mem, uint64_t size)
 		{
 			::operator delete(mem, size);
+		}
+		inline static void mFreeDebug(void* mem, uint64_t size)
+		{
+			::operator delete(mem, size);
+			M_TRACE("Freed {0} bytes of memory", size);
 		}
 
 	};
