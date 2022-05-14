@@ -1,5 +1,8 @@
 # VS files
 .vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
 
 # Binaries
 bin/
