@@ -1,14 +1,22 @@
 project "mContainers"
     kind "StaticLib"
     language "C++"
+    cppdialect "C++17"
 	systemversion "latest"
     staticruntime "on"
 
     targetdir 	("%{wks.location}/bin/%{prj.name}/" .. outputDir)
     objdir 		("%{wks.location}/obj/%{prj.name}/" .. outputDir)
 
+	includedirs
+	{
+		"dependencies/spdlog/include"
+	}
+
     files 
     { 
+		"mpch.h",
+		"mpch.cpp",
 		"inc/mContainers.h",
 		"inc/mBlock.h",
 		"inc/mCore.h",
